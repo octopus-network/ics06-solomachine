@@ -1,0 +1,9 @@
+[package]
+name = "ics06-solomachine"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ibc = { git = "https://github.com/cosmos/ibc-rs.git", branch = "main", default-feature = false }
