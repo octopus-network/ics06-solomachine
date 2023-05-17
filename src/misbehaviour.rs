@@ -1,5 +1,6 @@
 use crate::error::Error;
 use crate::prelude::*;
+use crate::signature_and_data::SignatureAndData;
 use bytes::Buf;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::ics24_host::identifier::ClientId;
@@ -8,8 +9,6 @@ use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v2::Misbehaviour as RawSmMisbehaviour;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
-
-use crate::signature_and_data::SignatureAndData;
 
 pub const SOLOMACHINE_MISBEHAVIOUR_TYPE_URL: &str = "/ibc.lightclients.solomachine.v1.Misbehaviour";
 

@@ -1,16 +1,14 @@
-use ibc_proto::protobuf::Protobuf;
-
-use crate::prelude::*;
-use crate::types::sign_bytes::SignBytes;
-
 use crate::client_state::SignatureAndData;
 use crate::consensus_state::ConsensusState as SmConsensusState;
 use crate::header::Header as SmHeader;
 use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
+use crate::prelude::*;
 use crate::proof::verify_signature;
+use crate::types::sign_bytes::SignBytes;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
+use ibc_proto::protobuf::Protobuf;
 
 use super::ClientState;
 

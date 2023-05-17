@@ -1,15 +1,13 @@
-use ibc_proto::protobuf::Protobuf;
-
-use crate::prelude::*;
-use crate::types::header_data::HeaderData;
-use crate::types::sign_bytes::SignBytes;
-
 use super::ClientState;
 use crate::header::Header as SmHeader;
+use crate::prelude::*;
 use crate::proof::verify_signature;
 use crate::signature_and_data::SignatureAndData;
+use crate::types::header_data::HeaderData;
+use crate::types::sign_bytes::SignBytes;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
+use ibc_proto::protobuf::Protobuf;
 impl ClientState {
     pub fn verify_header(
         &self,

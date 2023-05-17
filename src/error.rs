@@ -1,9 +1,8 @@
 use crate::prelude::*;
-use ibc::core::ics03_connection::error::ConnectionError;
-use ibc::core::ics04_channel::error::ChannelError;
-
 use displaydoc::Display;
 use ibc::core::ics02_client::error::ClientError;
+use ibc::core::ics03_connection::error::ConnectionError;
+use ibc::core::ics04_channel::error::ChannelError;
 use ibc::core::timestamp::ParseTimestampError;
 
 #[derive(Debug, Display)]

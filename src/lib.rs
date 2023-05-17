@@ -3,7 +3,6 @@
 extern crate alloc;
 
 use alloc::string::ToString;
-
 use ibc::core::ics02_client::client_type::ClientType;
 
 pub mod client_state;
