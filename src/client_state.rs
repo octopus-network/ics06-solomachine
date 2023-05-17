@@ -1,10 +1,10 @@
-use super::misbehaviour::signature_and_data::SignatureAndData;
 use crate::consensus_state::ConsensusState as SmConsensusState;
 use crate::error::Error;
 use crate::header::Header as SmHeader;
 use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
 use crate::prelude::*;
 use crate::proof::verify_signature;
+use crate::signature_and_data::SignatureAndData;
 use crate::types::sign_bytes::SignBytes;
 use crate::types::timestamped_signature_data::TimestampedSignatureData;
 use crate::types::DataType;

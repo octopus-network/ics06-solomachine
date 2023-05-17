@@ -1,5 +1,5 @@
-use super::misbehaviour::signature_and_data::SignatureAndData;
 use crate::error::Error;
+use crate::signature_and_data::SignatureAndData;
 use alloc::vec::Vec;
 use ibc_proto::google::protobuf::Any;
 

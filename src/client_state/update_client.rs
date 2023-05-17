@@ -6,8 +6,8 @@ use crate::types::sign_bytes::SignBytes;
 
 use super::ClientState;
 use crate::header::Header as SmHeader;
-use crate::misbehaviour::signature_and_data::SignatureAndData;
 use crate::proof::verify_signature;
+use crate::signature_and_data::SignatureAndData;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
 impl ClientState {

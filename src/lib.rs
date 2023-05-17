@@ -11,9 +11,10 @@ pub mod consensus_state;
 pub mod error;
 pub mod header;
 pub mod misbehaviour;
-pub mod proof;
-pub mod types;
 pub mod prelude;
+pub mod proof;
+pub mod signature_and_data;
+pub mod types;
 
 pub(crate) const SOLOMACHINE_CLIENT_TYPE: &str = "07-solomachine";
 

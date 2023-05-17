@@ -9,9 +9,7 @@ use ibc_proto::ibc::lightclients::solomachine::v2::Misbehaviour as RawSmMisbehav
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
-pub mod signature_and_data;
-
-use signature_and_data::SignatureAndData;
+use crate::signature_and_data::SignatureAndData;
 
 pub const SOLOMACHINE_MISBEHAVIOUR_TYPE_URL: &str = "/ibc.lightclients.solomachine.v1.Misbehaviour";
 
