@@ -2,7 +2,6 @@ use crate::error::Error;
 use crate::prelude::*;
 use bytes::Buf;
 use core::fmt::{Display, Error as FmtError, Formatter};
-use cosmrs::crypto::PublicKey;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;
 use ibc::Height;
@@ -21,7 +20,7 @@ pub struct Header {
     pub sequence: Height,
     pub timestamp: Timestamp,
     pub signature: Vec<u8>,
-    pub new_public_key: PublicKey,
+    pub new_public_key: Any,
     pub new_diversifier: String,
 }
 
@@ -66,9 +65,8 @@ impl TryFrom<RawSmHeader> for Header {
             Timestamp::from_nanoseconds(raw.timestamp).map_err(Error::ParseTimeError)?;
         let signature = raw.signature;
 
-        let new_public_key =
-            PublicKey::try_from(raw.new_public_key.ok_or(Error::PublicKeyIsEmpty)?)
-                .map_err(Error::PublicKeyParseFailed)?;
+        let new_public_key = raw.new_public_key.ok_or(Error::PublicKeyIsEmpty)?;
+
         let new_diversifier = raw.new_diversifier;
         Ok(Self {
             sequence,
@@ -86,7 +84,7 @@ impl From<Header> for RawSmHeader {
             sequence: value.sequence.revision_height(),
             timestamp: value.timestamp.nanoseconds(),
             signature: value.signature,
-            new_public_key: Some(value.new_public_key.to_any().expect("never failed")),
+            new_public_key: Some(value.new_public_key),
             new_diversifier: value.new_diversifier,
         }
     }

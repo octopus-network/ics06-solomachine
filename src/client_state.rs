@@ -9,7 +9,6 @@ use crate::types::sign_bytes::SignBytes;
 use crate::types::timestamped_signature_data::TimestampedSignatureData;
 use crate::types::DataType;
 use core::time::Duration;
-use cosmrs::crypto::PublicKey;
 use ibc::core::ics02_client::client_state::UpdateKind;
 use ibc::core::ics02_client::client_state::{ClientState as Ics2ClientState, UpdatedState};
 use ibc::core::ics02_client::client_type::ClientType;
@@ -98,7 +97,7 @@ impl ClientState {
     pub fn produce_verification_args(
         &self,
         proof: &CommitmentProofBytes,
-    ) -> Result<(PublicKey, SignatureAndData, Timestamp, Height), Error> {
+    ) -> Result<(Any, SignatureAndData, Timestamp, Height), Error> {
         let proof = Vec::<u8>::from(proof.clone());
         if proof.is_empty() {
             return Err(Error::ProofCannotEmpty);
