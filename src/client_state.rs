@@ -1,29 +1,29 @@
 use super::misbehaviour::signature_and_data::SignatureAndData;
-use crate::clients::ics06_solomachine::consensus_state::ConsensusState as SmConsensusState;
-use crate::clients::ics06_solomachine::error::Error;
-use crate::clients::ics06_solomachine::header::Header as SmHeader;
-use crate::clients::ics06_solomachine::misbehaviour::Misbehaviour as SmMisbehaviour;
-use crate::clients::ics06_solomachine::proof::verify_signature;
-use crate::clients::ics06_solomachine::types::sign_bytes::SignBytes;
-use crate::clients::ics06_solomachine::types::timestamped_signature_data::TimestampedSignatureData;
-use crate::clients::ics06_solomachine::types::DataType;
-use crate::core::ics02_client::client_state::UpdateKind;
-use crate::core::ics02_client::client_state::{ClientState as Ics2ClientState, UpdatedState};
-use crate::core::ics02_client::client_type::ClientType;
-use crate::core::ics02_client::consensus_state::ConsensusState;
-use crate::core::ics02_client::error::ClientError;
-use crate::core::ics23_commitment::commitment::{
-    CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
-};
-use crate::core::ics24_host::identifier::{ChainId, ClientId};
-use crate::core::ics24_host::path::ClientStatePath;
-use crate::core::ics24_host::path::Path;
-use crate::core::timestamp::Timestamp;
-use crate::core::{ExecutionContext, ValidationContext};
+use crate::consensus_state::ConsensusState as SmConsensusState;
+use crate::error::Error;
+use crate::header::Header as SmHeader;
+use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
 use crate::prelude::*;
-use crate::Height;
+use crate::proof::verify_signature;
+use crate::types::sign_bytes::SignBytes;
+use crate::types::timestamped_signature_data::TimestampedSignatureData;
+use crate::types::DataType;
 use core::time::Duration;
 use cosmrs::crypto::PublicKey;
+use ibc::core::ics02_client::client_state::UpdateKind;
+use ibc::core::ics02_client::client_state::{ClientState as Ics2ClientState, UpdatedState};
+use ibc::core::ics02_client::client_type::ClientType;
+use ibc::core::ics02_client::consensus_state::ConsensusState;
+use ibc::core::ics02_client::error::ClientError;
+use ibc::core::ics23_commitment::commitment::{
+    CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
+};
+use ibc::core::ics24_host::identifier::{ChainId, ClientId};
+use ibc::core::ics24_host::path::ClientStatePath;
+use ibc::core::ics24_host::path::Path;
+use ibc::core::timestamp::Timestamp;
+use ibc::core::{ExecutionContext, ValidationContext};
+use ibc::Height;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::core::commitment::v1::MerkleProof as RawMerkleProof;
 use ibc_proto::ibc::lightclients::solomachine::v2::ClientState as RawSmClientState;

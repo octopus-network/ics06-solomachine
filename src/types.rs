@@ -1,9 +1,9 @@
-use ibc::clients::ics06_solomachine::error::Error;
-use ibc::prelude::*;
+use crate::error::Error;
+use crate::prelude::*;
 use ibc_proto::ibc::lightclients::solomachine::v2::DataType as RawDataType;
 
 pub mod channel_state_data;
-pub mod client_stata_data;
+pub mod client_state_data;
 pub mod connection_state_data;
 pub mod consensus_state_data;
 pub mod header_data;

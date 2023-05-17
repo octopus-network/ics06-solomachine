@@ -1,7 +1,7 @@
 use crate::error::Error;
+use crate::prelude::*;
 use crate::types::DataType;
 use ibc::core::timestamp::Timestamp;
-use ibc::prelude::*;
 use ibc_proto::ibc::lightclients::solomachine::v2::SignatureAndData as RawSignatureAndData;
 use ibc_proto::protobuf::Protobuf;
 

@@ -1,9 +1,9 @@
-use crate::clients::ics06_solomachine::error::Error;
-use crate::core::ics02_client::error::ClientError;
-use crate::core::ics23_commitment::commitment::CommitmentRoot;
-use crate::core::timestamp::Timestamp;
+use crate::error::Error;
 use crate::prelude::*;
 use cosmrs::crypto::PublicKey;
+use ibc::core::ics02_client::error::ClientError;
+use ibc::core::ics23_commitment::commitment::CommitmentRoot;
+use ibc::core::timestamp::Timestamp;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v2::ConsensusState as RawSmConsensusState;
 use ibc_proto::protobuf::Protobuf;
@@ -59,7 +59,7 @@ impl ConsensusState {
     }
 }
 
-impl crate::core::ics02_client::consensus_state::ConsensusState for ConsensusState {
+impl ibc::core::ics02_client::consensus_state::ConsensusState for ConsensusState {
     fn root(&self) -> &CommitmentRoot {
         todo!()
     }

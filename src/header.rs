@@ -1,11 +1,11 @@
-use crate::clients::ics06_solomachine::error::Error;
-use crate::core::ics02_client::error::ClientError;
-use crate::core::timestamp::Timestamp;
+use crate::error::Error;
 use crate::prelude::*;
-use crate::Height;
 use bytes::Buf;
 use core::fmt::{Display, Error as FmtError, Formatter};
 use cosmrs::crypto::PublicKey;
+use ibc::core::ics02_client::error::ClientError;
+use ibc::core::timestamp::Timestamp;
+use ibc::Height;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v2::Header as RawSmHeader;
 use ibc_proto::protobuf::Protobuf;
@@ -45,7 +45,7 @@ impl Display for Header {
     }
 }
 
-impl crate::core::ics02_client::header::Header for Header {
+impl ibc::core::ics02_client::header::Header for Header {
     fn height(&self) -> Height {
         self.sequence
     }

@@ -1,5 +1,5 @@
 use super::misbehaviour::signature_and_data::SignatureAndData;
-use crate::clients::ics06_solomachine::error::Error;
+use crate::error::Error;
 use alloc::vec::Vec;
 use cosmrs::crypto::PublicKey;
 

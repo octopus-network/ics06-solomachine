@@ -1,6 +1,6 @@
-use crate::clients::ics06_solomachine::error::Error;
-use crate::core::ics04_channel::channel::ChannelEnd;
+use crate::error::Error;
 use crate::prelude::*;
+use ibc::core::ics04_channel::channel::ChannelEnd;
 use ibc_proto::ibc::lightclients::solomachine::v2::ChannelStateData as RawChannelStateData;
 use ibc_proto::protobuf::Protobuf;
 

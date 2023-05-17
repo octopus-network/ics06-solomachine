@@ -1,6 +1,6 @@
-use crate::clients::ics06_solomachine::error::Error;
-use crate::core::ics03_connection::connection::ConnectionEnd;
+use crate::error::Error;
 use crate::prelude::*;
+use ibc::core::ics03_connection::connection::ConnectionEnd;
 use ibc_proto::ibc::lightclients::solomachine::v2::ConnectionStateData as RawConnectionStateData;
 use ibc_proto::protobuf::Protobuf;
 

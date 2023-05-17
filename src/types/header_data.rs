@@ -1,4 +1,4 @@
-use crate::clients::ics06_solomachine::error::Error;
+use crate::error::Error;
 use crate::prelude::*;
 use cosmrs::crypto::PublicKey;
 use ibc_proto::ibc::lightclients::solomachine::v2::HeaderData as RawHeaderData;

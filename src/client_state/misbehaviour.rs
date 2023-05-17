@@ -1,7 +1,7 @@
 use ibc_proto::protobuf::Protobuf;
 
+use crate::prelude::*;
 use crate::types::sign_bytes::SignBytes;
-use ibc::prelude::*;
 
 use crate::client_state::SignatureAndData;
 use crate::consensus_state::ConsensusState as SmConsensusState;
@@ -51,7 +51,7 @@ impl ClientState {
             sequence: misbehaviour.sequence.revision_height(),
             timestamp: signature_and_data.timestamp,
             diversifier: self.consensus_state.diversifier.clone(),
-            data_type: crate::clients::ics06_solomachine::types::DataType::Header,
+            data_type: crate::types::DataType::Header,
             data: signature_and_data.data,
         };
         let data = sign_bytes.encode_vec();

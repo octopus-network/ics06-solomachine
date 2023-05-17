@@ -1,15 +1,15 @@
 use ibc_proto::protobuf::Protobuf;
 
-use crate::clients::ics06_solomachine::types::header_data::HeaderData;
-use crate::clients::ics06_solomachine::types::sign_bytes::SignBytes;
 use crate::prelude::*;
+use crate::types::header_data::HeaderData;
+use crate::types::sign_bytes::SignBytes;
 
 use super::ClientState;
-use crate::clients::ics06_solomachine::header::Header as SmHeader;
-use crate::clients::ics06_solomachine::misbehaviour::signature_and_data::SignatureAndData;
-use crate::clients::ics06_solomachine::proof::verify_signature;
-use crate::core::ics02_client::error::ClientError;
-use crate::core::{ics24_host::identifier::ClientId, ValidationContext};
+use crate::header::Header as SmHeader;
+use crate::misbehaviour::signature_and_data::SignatureAndData;
+use crate::proof::verify_signature;
+use ibc::core::ics02_client::error::ClientError;
+use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
 impl ClientState {
     pub fn verify_header(
         &self,
@@ -39,7 +39,7 @@ impl ClientState {
             timestamp: header.timestamp,
             diversifier: self.consensus_state.diversifier.clone(),
             // todo(davirain): https://github.com/cosmos/ibc-go/blob/388283012124fd3cd66c9541000541d9c6767117/modules/light-clients/06-solomachine/update.go#LL52C36-L52C36
-            data_type: crate::clients::ics06_solomachine::types::DataType::Header,
+            data_type: crate::types::DataType::Header,
             data: data_bz,
         };
         let data = sign_bytes.encode_vec();

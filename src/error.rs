@@ -1,10 +1,10 @@
-use crate::core::ics03_connection::error::ConnectionError;
-use crate::core::ics04_channel::error::ChannelError;
 use crate::prelude::*;
+use ibc::core::ics03_connection::error::ConnectionError;
+use ibc::core::ics04_channel::error::ChannelError;
 
-use crate::core::ics02_client::error::ClientError;
-use crate::core::timestamp::ParseTimestampError;
 use displaydoc::Display;
+use ibc::core::ics02_client::error::ClientError;
+use ibc::core::timestamp::ParseTimestampError;
 
 #[derive(Debug, Display)]
 pub enum Error {
