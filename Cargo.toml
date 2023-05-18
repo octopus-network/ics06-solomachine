@@ -28,6 +28,9 @@ scale-info = { version = "2.1.2", default-features = false, features = ["derive"
 ## for borsh encode or decode
 borsh = {version = "0.10.0", default-features = false, optional = true }
 
+[dev-dependencies]
+hex-literal = "0.4"
+
 [features]
 default = ["std"]
 std = [

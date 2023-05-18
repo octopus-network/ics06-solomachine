@@ -3,6 +3,7 @@
 use crate::cosmos::base::account_id::AccountId;
 use crate::cosmos::error::Error;
 use crate::prelude::*;
+use alloc::string::ToString;
 use core::str::FromStr;
 use eyre::Report as ErrorReport;
 use eyre::Result;
@@ -229,6 +230,7 @@ impl TryFrom<&PublicKeyJson> for PublicKey {
 #[cfg(test)]
 mod tests {
     use super::PublicKey;
+    use alloc::string::ToString;
 
     const EXAMPLE_JSON: &str = "{\"@type\":\"/cosmos.crypto.ed25519.PubKey\",\"key\":\"sEEsVGkXvyewKLWMJbHVDRkBoerW0IIwmj1rHkabtHU=\"}";
 

@@ -80,9 +80,10 @@ impl TryFrom<&Any> for LegacyAminoMultisig {
 #[cfg(test)]
 mod tests {
     use super::LegacyAminoMultisig;
-    use crate::{crypto::PublicKey, Any};
+    use crate::alloc::borrow::ToOwned;
+    use crate::cosmos::crypto::PublicKey;
     use hex_literal::hex;
-
+    use ibc_proto::google::protobuf::Any;
     #[test]
     fn any_round_trip() {
         let any = Any {

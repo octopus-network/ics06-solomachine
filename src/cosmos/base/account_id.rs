@@ -133,6 +133,8 @@ impl Serialize for AccountId {
 #[cfg(test)]
 mod tests {
     use super::AccountId;
+    use alloc::string::String;
+    use alloc::string::ToString;
 
     #[test]
     fn parse() {
