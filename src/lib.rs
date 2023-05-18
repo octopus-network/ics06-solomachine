@@ -7,11 +7,13 @@ use ibc::core::ics02_client::client_type::ClientType;
 
 pub mod client_state;
 pub mod consensus_state;
+pub mod cosmos;
 pub mod error;
 pub mod header;
 pub mod misbehaviour;
 pub mod prelude;
 pub mod proof;
+pub mod public_key;
 pub mod signature_and_data;
 pub mod types;
 

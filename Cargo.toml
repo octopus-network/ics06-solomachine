@@ -16,6 +16,12 @@ serde_derive = { version = "1.0.104", default-features = false, optional = true 
 serde = { version = "1.0", default-features = false, optional = true }
 serde_json = { version = "1", default-features = false, optional = true }
 erased-serde = { version = "0.3", default-features = false, features = ["alloc"], optional = true }
+k256 = { version = "0.13", features = ["ecdsa", "sha256"], default-features = false }
+tendermint = { version = "0.32", features = ["secp256k1", "rust-crypto"], default-features = false }
+rand_core = { version = "0.6", default-feature = false }
+subtle-encoding = { version = "0.5", features = ["bech32-preview"], default-features = false }
+ecdsa = { version = "0.16", default-features = false }
+
 ## for codec encode or decode
 parity-scale-codec = { version = "3.0.0", default-features = false, features = ["full"], optional = true }
 scale-info = { version = "2.1.2", default-features = false, features = ["derive"], optional = true }
@@ -33,6 +39,11 @@ std = [
     "serde/std",
     "serde_json/std",
     "erased-serde/std",
+    "k256/std",
+    "tendermint/std",
+    "rand_core/std",
+    "subtle-encoding/std",
+    "ecdsa/std",
 ]
 # This feature is required for token transfer (ICS-20)
 serde = ["dep:serde", "dep:serde_derive", "serde_json", "erased-serde"]
