@@ -17,7 +17,7 @@ use ibc::core::ics02_client::error::ClientError;
 use ibc::core::ics23_commitment::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
-use ibc::core::ics24_host::identifier::{ChainId, ClientId};
+use ibc::core::ics24_host::identifier::ClientId;
 use ibc::core::ics24_host::path::ClientStatePath;
 use ibc::core::ics24_host::path::Path;
 use ibc::core::timestamp::Timestamp;
@@ -134,10 +134,6 @@ impl ClientState {
 impl Ics2ClientState for ClientState {
     /// Return the chain identifier which this client is serving (i.e., the client is verifying
     /// consensus states from this chain).
-    fn chain_id(&self) -> ChainId {
-        // todo(davirian)
-        ChainId::default()
-    }
 
     /// ClientType is Solo Machine.
     fn client_type(&self) -> ClientType {
@@ -175,14 +171,6 @@ impl Ics2ClientState for ClientState {
     fn expired(&self, _elapsed: Duration) -> bool {
         // todo(davirian)
         false
-    }
-
-    /// Helper function to verify the upgrade client procedure.
-    /// Resets all fields except the blockchain-specific ones,
-    /// and updates the given fields.
-    fn zero_custom_fields(&mut self) {
-        // ref: https://github.com/cosmos/ibc-go/blob/f32b1052e1357949e6a67685d355c7bcc6242b84/modules/light-clients/06-solomachine/client_state.go#L76
-        panic!("ZeroCustomFields is not implemented as the solo machine implementation does not support upgrades.")
     }
 
     fn initialise(&self, consensus_state: Any) -> Result<Box<dyn ConsensusState>, ClientError> {
