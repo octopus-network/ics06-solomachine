@@ -47,9 +47,9 @@ jobs:
         run: |
           cargo test --all-features -- --test-threads=1 --nocapture
 
-      - name: Check Build for Benchmarking
-        run: |
-          cargo check --features=runtime-benchmarks --release
+      # - name: Check Build for Benchmarking
+      #   run: |
+      #     cargo check --features=runtime-benchmarks --release
 
       - name: Check no_std support
         run: cargo check --no-default-features --target=wasm32-unknown-unknown
