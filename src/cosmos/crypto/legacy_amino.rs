@@ -78,7 +78,6 @@ mod tests {
     use super::LegacyAminoMultisig;
     use super::LEGACY_AMINO_MULTISIG_TYPE_URL;
     use crate::alloc::borrow::ToOwned;
-    use crate::cosmos::crypto::PublicKey;
     use hex_literal::hex;
     use ibc_proto::google::protobuf::Any;
 
