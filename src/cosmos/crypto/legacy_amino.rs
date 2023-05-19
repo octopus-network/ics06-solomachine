@@ -7,7 +7,7 @@ use eyre::Report as ErrorReport;
 use eyre::Result;
 use ibc_proto as proto;
 use ibc_proto::google::protobuf::Any;
-use ibc_proto::traits::{Message, MessageExt};
+use prost::Message;
 
 /// Legacy Amino multisig key.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -37,9 +37,7 @@ impl From<LegacyAminoMultisig> for Any {
 
         Any {
             type_url: LegacyAminoMultisig::TYPE_URL.to_owned(),
-            value: proto
-                .to_bytes()
-                .expect("LegacyAminoPubKey serialization error"),
+            value: proto.encode_to_vec(),
         }
     }
 }

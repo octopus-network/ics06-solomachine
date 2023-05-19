@@ -9,7 +9,7 @@ use eyre::Report as ErrorReport;
 use eyre::Result;
 use ibc_proto as proto;
 use ibc_proto::google::protobuf::Any;
-use ibc_proto::traits::{Message, MessageExt};
+use prost::Message;
 use serde::{Deserialize, Serialize};
 use subtle_encoding::base64;
 
@@ -62,11 +62,11 @@ impl PublicKey {
             tendermint::PublicKey::Ed25519(_) => proto::cosmos::crypto::secp256k1::PubKey {
                 key: self.to_bytes(),
             }
-            .to_bytes()?,
+            .encode_to_vec(),
             tendermint::PublicKey::Secp256k1(_) => proto::cosmos::crypto::secp256k1::PubKey {
                 key: self.to_bytes(),
             }
-            .to_bytes()?,
+            .encode_to_vec(),
             _ => return Err(Error::Crypto.into()),
         };
 
