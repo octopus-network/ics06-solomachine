@@ -9,6 +9,9 @@ use ibc_proto as proto;
 use ibc_proto::google::protobuf::Any;
 use prost::Message;
 
+/// Protobuf [`Any`] type URL for [`LegacyAminoMultisig`].
+const LEGACY_AMINO_MULTISIG_TYPE_URL: &str = "/cosmos.crypto.multisig.LegacyAminoPubKey";
+
 /// Legacy Amino multisig key.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LegacyAminoMultisig {
@@ -17,11 +20,6 @@ pub struct LegacyAminoMultisig {
 
     /// Public keys which comprise the multisig key.
     pub public_keys: Vec<PublicKey>,
-}
-
-impl LegacyAminoMultisig {
-    /// Protobuf [`Any`] type URL for [`LegacyAminoMultisig`].
-    pub const TYPE_URL: &'static str = "/cosmos.crypto.multisig.LegacyAminoPubKey";
 }
 
 impl From<LegacyAminoMultisig> for Any {
@@ -36,7 +34,7 @@ impl From<LegacyAminoMultisig> for Any {
         };
 
         Any {
-            type_url: LegacyAminoMultisig::TYPE_URL.to_owned(),
+            type_url: LEGACY_AMINO_MULTISIG_TYPE_URL.to_owned(),
             value: proto.encode_to_vec(),
         }
     }
@@ -54,7 +52,7 @@ impl TryFrom<&Any> for LegacyAminoMultisig {
     type Error = ErrorReport;
 
     fn try_from(any: &Any) -> Result<Self> {
-        if any.type_url != Self::TYPE_URL {
+        if any.type_url != LEGACY_AMINO_MULTISIG_TYPE_URL {
             return Err(Error::Crypto.wrap_err(format!(
                 "invalid type URL for LegacyAminoPubKey: {}",
                 &any.type_url
