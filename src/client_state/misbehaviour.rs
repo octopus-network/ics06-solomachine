@@ -46,14 +46,16 @@ impl ClientState {
         misbehaviour: SmMisbehaviour,
         signature_and_data: SignatureAndData,
     ) -> Result<(), ClientError> {
-        let sign_bytes = SignBytes {
-            sequence: misbehaviour.sequence.revision_height(),
-            timestamp: signature_and_data.timestamp.nanoseconds(),
-            diversifier: self.consensus_state.diversifier.clone(),
-            data_type: DataType::Header,
-            data: signature_and_data.data,
-        };
-        let data = sign_bytes.encode_vec();
+        // let sign_bytes = SignBytes {
+        //     sequence: misbehaviour.sequence.revision_height(),
+        //     timestamp: signature_and_data.timestamp.nanoseconds(),
+        //     diversifier: self.consensus_state.diversifier.clone(),
+        //     data_type: DataType::Header,
+        //     data: signature_and_data.data,
+        // };
+        // let data = sign_bytes.encode_vec();
+        // todo (davirian) ref: https://github.com/cosmos/ibc-go/blob/6f1d8d672705c6e8f5b74a396d883e2834a6b943/modules/light-clients/06-solomachine/types/misbehaviour_handle.go#L52
+        let data = vec![];
 
         let signature_and_data = SignatureAndData::decode_vec(&signature_and_data.signature)
             .map_err(|_| ClientError::Other {
