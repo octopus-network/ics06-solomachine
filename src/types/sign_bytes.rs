@@ -1,6 +1,5 @@
 use crate::error::Error;
 use crate::prelude::*;
-use ibc::core::timestamp::Timestamp;
 use ibc_proto::ibc::lightclients::solomachine::v2::SignBytes as RawSignBytes;
 
 use super::DataType;
@@ -11,7 +10,7 @@ use ibc_proto::protobuf::Protobuf;
 #[derive(Clone, PartialEq)]
 pub struct SignBytes {
     pub sequence: u64,
-    pub timestamp: Timestamp,
+    pub timestamp: u64,
     pub diversifier: String,
     /// type of the data used
     pub data_type: DataType,
@@ -27,7 +26,7 @@ impl TryFrom<RawSignBytes> for SignBytes {
     fn try_from(raw: RawSignBytes) -> Result<Self, Self::Error> {
         Ok(Self {
             sequence: raw.sequence,
-            timestamp: Timestamp::from_nanoseconds(raw.timestamp).map_err(Error::ParseTimeError)?,
+            timestamp: raw.timestamp,
             diversifier: raw.diversifier,
             data_type: DataType::try_from(raw.data_type)?,
             data: raw.data,
@@ -39,7 +38,7 @@ impl From<SignBytes> for RawSignBytes {
     fn from(value: SignBytes) -> Self {
         Self {
             sequence: value.sequence,
-            timestamp: value.timestamp.nanoseconds(),
+            timestamp: value.timestamp,
             diversifier: value.diversifier,
             data_type: i32::from(value.data_type),
             data: value.data,

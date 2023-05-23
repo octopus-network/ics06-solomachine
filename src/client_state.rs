@@ -97,12 +97,31 @@ impl ClientState {
     // consensus state, the unmarshalled proof representing the signature and timestamp.
     pub fn produce_verification_args(
         &self,
+        height: &Height,
+        prefix: &CommitmentPrefix,
         proof: &CommitmentProofBytes,
     ) -> Result<(PublicKey, SignatureAndData, Timestamp, Height), Error> {
+        if height.revision_number() != 0 {
+            return Err(Error::Other(format!(
+                "revision must be 0 for solomachine, got revision-number: {}",
+                height.revision_number()
+            )));
+        }
+
+        // sequence is encoded in the revision height of height struct
+        let sequence = height.revision_height();
+        if prefix.as_bytes().is_empty() {
+            return Err(Error::Other("prefix cannot be empty".into()));
+        }
+
+        // todo missing validate check Prefix
+        // ref: https://github.com/cosmos/ibc-go/blob/6f1d8d672705c6e8f5b74a396d883e2834a6b943/modules/light-clients/06-solomachine/types/client_state.go#L438
+
         let proof = Vec::<u8>::from(proof.clone());
         if proof.is_empty() {
-            return Err(Error::ProofCannotEmpty);
+            return Err(Error::Other("proof cannot be empty".into()));
         }
+
         let timestamped_sig_data = TimestampedSignatureData::decode_vec(&proof).map_err(|e| {
             Error::Other(format!(
                 "failed to decode proof into type TimestampedSignatureData: {}",
@@ -119,6 +138,14 @@ impl ClientState {
         let signature_and_data = SignatureAndData::decode_vec(&timestamped_sig_data.signature_data)
             .map_err(|_| Error::Other("failed to decode SignatureData".into()))?;
 
+        let latest_sequence = self.sequence.revision_height();
+        if latest_sequence != sequence {
+            return Err(Error::Other(format!(
+                "client state sequence != proof sequence ({} != {})",
+                latest_sequence, sequence,
+            )));
+        }
+
         if self.consensus_state.timestamp > timestamp {
             return Err(Error::Other(format!(
                 "the consensus state timestamp is greater than the signature timestamp ({} >= {})",
@@ -126,9 +153,8 @@ impl ClientState {
             )));
         }
 
-        let sequence = self.latest_height();
         let public_key = self.consensus_state.public_key();
-        Ok((public_key, signature_and_data, timestamp, sequence))
+        Ok((public_key, signature_and_data, timestamp, height.clone()))
     }
 }
 
@@ -180,9 +206,10 @@ impl Ics2ClientState for ClientState {
     /// Helper function to verify the upgrade client procedure.
     /// Resets all fields except the blockchain-specific ones,
     /// and updates the given fields.
+    // ref: https://github.com/cosmos/ibc-go/blob/6f1d8d672705c6e8f5b74a396d883e2834a6b943/modules/light-clients/06-solomachine/types/client_state.go#L67
     fn zero_custom_fields(&mut self) {
-        // ref: https://github.com/cosmos/ibc-go/blob/f32b1052e1357949e6a67685d355c7bcc6242b84/modules/light-clients/06-solomachine/client_state.go#L76
-        panic!("ZeroCustomFields is not implemented as the solo machine implementation does not support upgrades.")
+        self.is_frozen = false;
+        self.allow_update_after_proposal = false
     }
 
     fn initialise(&self, consensus_state: Any) -> Result<Box<dyn ConsensusState>, ClientError> {
@@ -332,7 +359,9 @@ impl Ics2ClientState for ClientState {
         path: Path,
         value: Vec<u8>,
     ) -> Result<(), ClientError> {
-        let (public_key, sig_data, timestamp, sequence) = self.produce_verification_args(proof)?;
+        let height = self.sequence.increment();
+        let (public_key, sig_data, timestamp, sequence) =
+            self.produce_verification_args(&height, _prefix, proof)?;
         let data_type = match path {
             Path::ClientState(_) => DataType::ClientState,
             Path::ClientConsensusState(_) => DataType::ConsensusState,
@@ -350,7 +379,7 @@ impl Ics2ClientState for ClientState {
         };
         let sign_bytes = SignBytes {
             sequence: sequence.revision_height(),
-            timestamp,
+            timestamp: timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
             data_type,
             data: value,
@@ -376,7 +405,9 @@ impl Ics2ClientState for ClientState {
         _root: &CommitmentRoot,
         path: Path,
     ) -> Result<(), ClientError> {
-        let (public_key, sig_data, timestamp, sequence) = self.produce_verification_args(proof)?;
+        let height = self.sequence.increment();
+        let (public_key, sig_data, timestamp, sequence) =
+            self.produce_verification_args(&height, _prefix, proof)?;
         let data_type = match path {
             Path::ClientState(_) => DataType::ClientState,
             Path::ClientConsensusState(_) => DataType::ConsensusState,
@@ -394,7 +425,7 @@ impl Ics2ClientState for ClientState {
         };
         let sign_bytes = SignBytes {
             sequence: sequence.revision_height(),
-            timestamp,
+            timestamp: timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
             data_type,
             data: vec![],

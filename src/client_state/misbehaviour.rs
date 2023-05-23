@@ -47,7 +47,7 @@ impl ClientState {
     ) -> Result<(), ClientError> {
         let sign_bytes = SignBytes {
             sequence: misbehaviour.sequence.revision_height(),
-            timestamp: signature_and_data.timestamp,
+            timestamp: signature_and_data.timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
             data_type: crate::types::DataType::Header,
             data: signature_and_data.data,
