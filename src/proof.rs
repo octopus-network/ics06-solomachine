@@ -3,24 +3,26 @@ use crate::consensus_state::ConsensusState;
 use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
 use crate::header::Header;
+use crate::proof::types::channel_state_data::ChannelStateData;
+use crate::proof::types::client_state_data::ClientStateData;
+use crate::proof::types::connection_state_data::ConnectionStateData;
+use crate::proof::types::consensus_state_data::ConsensusStateData;
+use crate::proof::types::header_data::HeaderData;
+use crate::proof::types::next_sequence_recv_data::NextSequenceRecvData;
+use crate::proof::types::packet_acknowledgement_data::PacketAcknowledgementData;
+use crate::proof::types::packet_commitment_data::PacketCommitmentData;
+use crate::proof::types::packet_receipt_absence_data::PacketReceiptAbsenceData;
+use crate::proof::types::sign_bytes::SignBytes;
+use crate::proof::types::DataType;
 use crate::signature_and_data::SignatureAndData;
-use crate::types::channel_state_data::ChannelStateData;
-use crate::types::client_state_data::ClientStateData;
-use crate::types::connection_state_data::ConnectionStateData;
-use crate::types::consensus_state_data::ConsensusStateData;
-use crate::types::header_data::HeaderData;
-use crate::types::next_sequence_recv_data::NextSequenceRecvData;
-use crate::types::packet_acknowledgement_data::PacketAcknowledgementData;
-use crate::types::packet_commitment_data::PacketCommitmentData;
-use crate::types::packet_receipt_absence_data::PacketReceiptAbsenceData;
-use crate::types::sign_bytes::SignBytes;
-use crate::types::DataType;
 use alloc::string::String;
 use alloc::vec::Vec;
 use ibc::core::ics03_connection::connection::ConnectionEnd;
 use ibc::core::ics04_channel::channel::ChannelEnd;
 use ibc::core::ics24_host::path::Path;
 use ibc_proto::protobuf::Protobuf;
+
+pub mod types;
 
 // Verify_signature verifies if the the provided public key generated the signature
 // over the given data. Single and Multi signature public keys are supported.

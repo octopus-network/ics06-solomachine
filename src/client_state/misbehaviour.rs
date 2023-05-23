@@ -3,8 +3,9 @@ use crate::consensus_state::ConsensusState as SmConsensusState;
 use crate::header::Header as SmHeader;
 use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
 use crate::prelude::*;
+use crate::proof::types::sign_bytes::SignBytes;
+use crate::proof::types::DataType;
 use crate::proof::verify_signature;
-use crate::types::sign_bytes::SignBytes;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
@@ -49,7 +50,7 @@ impl ClientState {
             sequence: misbehaviour.sequence.revision_height(),
             timestamp: signature_and_data.timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
-            data_type: crate::types::DataType::Header,
+            data_type: DataType::Header,
             data: signature_and_data.data,
         };
         let data = sign_bytes.encode_vec();
