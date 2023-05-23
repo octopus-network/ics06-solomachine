@@ -1,4 +1,5 @@
 use crate::consensus_state::ConsensusState as SmConsensusState;
+use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
 use crate::header::Header as SmHeader;
 use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
@@ -97,7 +98,7 @@ impl ClientState {
     pub fn produce_verification_args(
         &self,
         proof: &CommitmentProofBytes,
-    ) -> Result<(Any, SignatureAndData, Timestamp, Height), Error> {
+    ) -> Result<(PublicKey, SignatureAndData, Timestamp, Height), Error> {
         let proof = Vec::<u8>::from(proof.clone());
         if proof.is_empty() {
             return Err(Error::ProofCannotEmpty);

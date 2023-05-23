@@ -1,3 +1,4 @@
+use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
 use crate::prelude::*;
 use ibc::core::ics02_client::error::ClientError;
@@ -18,7 +19,7 @@ pub const SOLOMACHINE_CONSENSUS_STATE_TYPE_URL: &str =
 #[derive(Clone, PartialEq, Debug)]
 pub struct ConsensusState {
     /// public key of the solo machine
-    pub public_key: Any,
+    pub public_key: PublicKey,
     /// diversifier allows the same public key to be re-used across different solo
     /// machine clients (potentially on different chains) without being considered
     /// misbehaviour.
@@ -27,7 +28,7 @@ pub struct ConsensusState {
 }
 
 impl ConsensusState {
-    pub fn new(public_key: Any, diversifier: String, timestamp: Timestamp) -> Self {
+    pub fn new(public_key: PublicKey, diversifier: String, timestamp: Timestamp) -> Self {
         Self {
             public_key,
             diversifier,
@@ -54,7 +55,7 @@ impl ConsensusState {
     // An error is returned if the public key is nil or the cached value
     // is not a PubKey.
     // todo(davirain)
-    pub fn public_key(&self) -> Any {
+    pub fn public_key(&self) -> PublicKey {
         self.public_key.clone()
     }
 }
@@ -75,7 +76,8 @@ impl TryFrom<RawSmConsensusState> for ConsensusState {
     type Error = Error;
 
     fn try_from(raw: RawSmConsensusState) -> Result<Self, Self::Error> {
-        let public_key = raw.public_key.ok_or(Error::PublicKeyIsEmpty)?;
+        let public_key = PublicKey::try_from(raw.public_key.ok_or(Error::PublicKeyIsEmpty)?)
+            .map_err(Error::PublicKeyParseFailed)?;
         let timestamp =
             Timestamp::from_nanoseconds(raw.timestamp).map_err(Error::ParseTimeError)?;
         Ok(Self {
@@ -88,7 +90,10 @@ impl TryFrom<RawSmConsensusState> for ConsensusState {
 
 impl From<ConsensusState> for RawSmConsensusState {
     fn from(value: ConsensusState) -> Self {
-        let public_key = value.public_key;
+        let public_key = value
+            .public_key
+            .to_any()
+            .expect("conver public key to any enver failed");
         let timestamp = value.timestamp.nanoseconds();
         Self {
             public_key: Some(public_key),

@@ -1,6 +1,6 @@
+use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
 use crate::prelude::*;
-use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v2::HeaderData as RawHeaderData;
 use ibc_proto::protobuf::Protobuf;
 
@@ -9,7 +9,7 @@ use ibc_proto::protobuf::Protobuf;
 #[derive(Clone, PartialEq)]
 pub struct HeaderData {
     /// header public key
-    pub new_pub_key: Any,
+    pub new_pub_key: PublicKey,
     /// header diversifier
     pub new_diversifier: String,
 }
@@ -20,7 +20,8 @@ impl TryFrom<RawHeaderData> for HeaderData {
     type Error = Error;
 
     fn try_from(raw: RawHeaderData) -> Result<Self, Self::Error> {
-        let new_pub_key = raw.new_pub_key.ok_or(Error::PublicKeyIsEmpty)?;
+        let new_pub_key = PublicKey::try_from(raw.new_pub_key.ok_or(Error::PublicKeyIsEmpty)?)
+            .map_err(Error::PublicKeyParseFailed)?;
         Ok(Self {
             new_pub_key,
             new_diversifier: raw.new_diversifier,
@@ -31,7 +32,7 @@ impl TryFrom<RawHeaderData> for HeaderData {
 impl From<HeaderData> for RawHeaderData {
     fn from(value: HeaderData) -> Self {
         Self {
-            new_pub_key: Some(value.new_pub_key),
+            new_pub_key: Some(value.new_pub_key.to_any().expect("never failed")),
             new_diversifier: value.new_diversifier,
         }
     }

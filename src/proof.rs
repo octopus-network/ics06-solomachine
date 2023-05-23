@@ -1,7 +1,7 @@
+use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
 use crate::signature_and_data::SignatureAndData;
 use alloc::vec::Vec;
-use ibc_proto::google::protobuf::Any;
 
 // Verify_signature verifies if the the provided public key generated the signature
 // over the given data. Single and Multi signature public keys are supported.
@@ -9,7 +9,7 @@ use ibc_proto::google::protobuf::Any;
 // returned if signature verification fails or an invalid SignatureData type is
 // provided.
 pub fn verify_signature(
-    _publik_key: Any,
+    _publik_key: PublicKey,
     _sign_bytes: Vec<u8>,
     _signature_and_data: SignatureAndData,
 ) -> Result<(), Error> {
