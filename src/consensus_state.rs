@@ -56,7 +56,7 @@ impl ConsensusState {
     // is not a PubKey.
     // todo(davirain)
     pub fn public_key(&self) -> PublicKey {
-        self.public_key.clone()
+        self.public_key
     }
 }
 

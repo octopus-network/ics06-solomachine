@@ -154,7 +154,7 @@ impl ClientState {
         }
 
         let public_key = self.consensus_state.public_key();
-        Ok((public_key, signature_and_data, timestamp, height.clone()))
+        Ok((public_key, signature_and_data, timestamp, *height))
     }
 }
 
