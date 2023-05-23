@@ -4,13 +4,21 @@ use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
 use crate::header::Header;
 use crate::signature_and_data::SignatureAndData;
+use crate::types::channel_state_data::ChannelStateData;
 use crate::types::client_state_data::ClientStateData;
+use crate::types::connection_state_data::ConnectionStateData;
 use crate::types::consensus_state_data::ConsensusStateData;
 use crate::types::header_data::HeaderData;
-use crate::types::sign_bytes::{self, SignBytes};
+use crate::types::next_sequence_recv_data::NextSequenceRecvData;
+use crate::types::packet_acknowledgement_data::PacketAcknowledgementData;
+use crate::types::packet_commitment_data::PacketCommitmentData;
+use crate::types::packet_receipt_absence_data::PacketReceiptAbsenceData;
+use crate::types::sign_bytes::SignBytes;
 use crate::types::DataType;
 use alloc::string::String;
 use alloc::vec::Vec;
+use ibc::core::ics03_connection::connection::ConnectionEnd;
+use ibc::core::ics04_channel::channel::ChannelEnd;
 use ibc::core::ics24_host::path::Path;
 use ibc_proto::protobuf::Protobuf;
 
@@ -120,6 +128,184 @@ pub fn consensus_state_data_bytes(path: Path, consensus_state: ConsensusState) -
     let data = ConsensusStateData {
         path: alloc::format!("{}", path).as_bytes().to_vec(),
         consensus_state,
+    };
+    data.encode_vec()
+}
+
+// ConnectionStateSignBytes returns the sign bytes for verification of the
+// connection state.
+pub fn connection_state_sign_bytes(
+    sequence: u64,
+    timestamp: u64,
+    diversifier: String,
+    path: Path,
+    connection_end: ConnectionEnd,
+) -> Vec<u8> {
+    let data_bz = connection_state_data_bytes(path, connection_end);
+    let sign_bytes = SignBytes {
+        sequence,
+        timestamp,
+        diversifier,
+        data_type: DataType::ConnectionState,
+        data: data_bz,
+    };
+    sign_bytes.encode_vec()
+}
+
+// ConnectionStateDataBytes returns the connection state data bytes used in constructing
+// SignBytes.
+pub fn connection_state_data_bytes(path: Path, connection_end: ConnectionEnd) -> Vec<u8> {
+    let data = ConnectionStateData {
+        path: alloc::format!("{}", path).as_bytes().to_vec(),
+        connection: connection_end,
+    };
+    data.encode_vec()
+}
+
+// ChannelStateSignBytes returns the sign bytes for verification of the
+// channel state.
+pub fn channel_state_sign_bytes(
+    sequence: u64,
+    timestamp: u64,
+    diversifier: String,
+    path: Path,
+    channel_end: ChannelEnd,
+) -> Vec<u8> {
+    let data_bz = channel_state_data_bytes(path, channel_end);
+    let sign_bytes = SignBytes {
+        sequence,
+        timestamp,
+        diversifier,
+        data_type: DataType::ChannelState,
+        data: data_bz,
+    };
+    sign_bytes.encode_vec()
+}
+
+// ChannelStateDataBytes returns the channel state data bytes used in constructing
+// SignBytes.
+pub fn channel_state_data_bytes(path: Path, channel_end: ChannelEnd) -> Vec<u8> {
+    let data = ChannelStateData {
+        path: alloc::format!("{}", path).as_bytes().to_vec(),
+        channel: channel_end,
+    };
+    data.encode_vec()
+}
+
+// PacketCommitmentSignBytes returns the sign bytes for verification of the
+// packet commitment.
+pub fn packet_commitment_sign_bytes(
+    sequence: u64,
+    timestamp: u64,
+    diversifier: String,
+    path: Path,
+    commitment_bytes: Vec<u8>,
+) -> Vec<u8> {
+    let data_bz = packet_commitment_data_bytes(path, commitment_bytes);
+    let sign_bytes = SignBytes {
+        sequence,
+        timestamp,
+        diversifier,
+        data_type: DataType::PacketCommitment,
+        data: data_bz,
+    };
+    sign_bytes.encode_vec()
+}
+
+// PacketCommitmentDataBytes returns the packet commitment data bytes used in constructing
+// SignBytes.
+pub fn packet_commitment_data_bytes(path: Path, commitment_bytes: Vec<u8>) -> Vec<u8> {
+    let data = PacketCommitmentData {
+        path: alloc::format!("{}", path).as_bytes().to_vec(),
+        commitment: commitment_bytes,
+    };
+    data.encode_vec()
+}
+
+// // PacketAcknowledgementSignBytes returns the sign bytes for verification of
+// // the acknowledgement.
+pub fn packet_acknowledgement_sign_bytes(
+    sequence: u64,
+    timestamp: u64,
+    diversifier: String,
+    path: Path,
+    acknowledgement: Vec<u8>,
+) -> Vec<u8> {
+    let data_bz = packet_acknowledgement_data_bytes(path, acknowledgement);
+    let sign_bytes = SignBytes {
+        sequence,
+        timestamp,
+        diversifier,
+        data_type: DataType::PacketAcknowledgement,
+        data: data_bz,
+    };
+    sign_bytes.encode_vec()
+}
+
+// PacketAcknowledgementDataBytes returns the packet acknowledgement data bytes used in constructing
+// SignBytes.
+pub fn packet_acknowledgement_data_bytes(path: Path, acknowledgement: Vec<u8>) -> Vec<u8> {
+    let data = PacketAcknowledgementData {
+        path: alloc::format!("{}", path).as_bytes().to_vec(),
+        acknowledgement,
+    };
+    data.encode_vec()
+}
+
+// PacketReceiptAbsenceSignBytes returns the sign bytes for verification
+// of the absence of an receipt.
+pub fn packet_receipt_absence_sign_bytes(
+    sequence: u64,
+    timestamp: u64,
+    diversifier: String,
+    path: Path,
+) -> Vec<u8> {
+    let data_bz = packet_receipt_absence_data_bytes(path);
+    let sign_bytes = SignBytes {
+        sequence,
+        timestamp,
+        diversifier,
+        data_type: DataType::PacketReceiptAbsence,
+        data: data_bz,
+    };
+    sign_bytes.encode_vec()
+}
+
+// PacketReceiptAbsenceDataBytes returns the packet receipt absence data bytes
+// used in constructing SignBytes.
+pub fn packet_receipt_absence_data_bytes(path: Path) -> Vec<u8> {
+    let data = PacketReceiptAbsenceData {
+        path: alloc::format!("{}", path).as_bytes().to_vec(),
+    };
+    data.encode_vec()
+}
+
+// NextSequenceRecvSignBytes returns the sign bytes for verification of the next
+// sequence to be received.
+pub fn next_sequence_recv_sign_bytes(
+    sequence: u64,
+    timestamp: u64,
+    diversifier: String,
+    path: Path,
+    next_sequence_recv: u64,
+) -> Vec<u8> {
+    let data_bz = next_sequence_recv_data_bytes(path, next_sequence_recv);
+    let sign_bytes = SignBytes {
+        sequence,
+        timestamp,
+        diversifier,
+        data_type: DataType::NextSequenceRecv,
+        data: data_bz,
+    };
+    sign_bytes.encode_vec()
+}
+
+// NextSequenceRecvDataBytes returns the next sequence recv data bytes used in constructing
+// SignBytes.
+pub fn next_sequence_recv_data_bytes(path: Path, next_sequence_recv: u64) -> Vec<u8> {
+    let data = NextSequenceRecvData {
+        path: alloc::format!("{}", path).as_bytes().to_vec(),
+        next_seq_recv: next_sequence_recv,
     };
     data.encode_vec()
 }
