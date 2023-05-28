@@ -1,8 +1,5 @@
-use core::str::FromStr;
-
 use crate::error::Error;
 use crate::prelude::*;
-use ibc::core::ics24_host::path::Path;
 use ibc::core::timestamp::Timestamp;
 use ibc_proto::ibc::lightclients::solomachine::v3::SignatureAndData as RawSignatureAndData;
 use ibc_proto::protobuf::Protobuf;
@@ -12,7 +9,7 @@ use ibc_proto::protobuf::Protobuf;
 #[derive(Clone, PartialEq)]
 pub struct SignatureAndData {
     pub signature: Vec<u8>,
-    pub path: Path,
+    pub path: Vec<u8>,
     pub data: Vec<u8>,
     pub timestamp: Timestamp,
 }
@@ -21,7 +18,10 @@ impl core::fmt::Display for SignatureAndData {
         write!(
             f,
             "signature: {:?}, path: {}, data: {:?}, timestamp: {}",
-            self.signature, self.path, self.data, self.timestamp
+            self.signature,
+            String::from_utf8(self.path)?,
+            self.data,
+            self.timestamp
         )
     }
 }
@@ -33,16 +33,12 @@ impl TryFrom<RawSignatureAndData> for SignatureAndData {
 
     fn try_from(raw: RawSignatureAndData) -> Result<Self, Self::Error> {
         let signature = raw.signature;
-        let path = String::from_utf8(raw.path)
-            .map_err(|e| Error::Other(format!("decode Vec<u8> to String failed error({})", e)))?;
-        let path =
-            Path::from_str(&path).map_err(|e| Error::Other(format!("Parse path error({})", e)))?;
         let data = raw.data;
         let timestamp =
             Timestamp::from_nanoseconds(raw.timestamp).map_err(Error::ParseTimeError)?;
         Ok(Self {
             signature,
-            path,
+            path: raw.path,
             data,
             timestamp,
         })
@@ -53,7 +49,7 @@ impl From<SignatureAndData> for RawSignatureAndData {
     fn from(value: SignatureAndData) -> Self {
         Self {
             signature: value.signature,
-            path: format!("{}", value.path).as_bytes().to_vec(),
+            path: value.path,
             data: value.data,
             timestamp: value.timestamp.nanoseconds(),
         }

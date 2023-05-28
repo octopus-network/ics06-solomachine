@@ -1,7 +1,5 @@
 use crate::error::Error;
 use crate::prelude::*;
-use core::str::FromStr;
-use ibc::core::ics24_host::path::Path;
 use ibc_proto::ibc::lightclients::solomachine::v3::SignBytes as RawSignBytes;
 
 use ibc_proto::protobuf::Protobuf;

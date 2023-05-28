@@ -3,11 +3,14 @@ use crate::consensus_state::ConsensusState as SmConsensusState;
 use crate::header::Header as SmHeader;
 use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
 use crate::prelude::*;
+use crate::proof::types::sign_bytes::SignBytes;
 use crate::proof::verify_signature;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
+use ibc_proto::ibc::core::commitment::v1::MerklePath;
 use ibc_proto::protobuf::Protobuf;
+use prost::Message;
 
 use super::ClientState;
 
@@ -18,18 +21,18 @@ impl ClientState {
         &self,
         _ctx: &dyn ValidationContext,
         _client_id: &ClientId,
-        _misbehaviour: SmMisbehaviour,
+        misbehaviour: SmMisbehaviour,
     ) -> Result<(), ClientError> {
         // NOTE: a check that the misbehaviour message data are not equal is done by
         // misbehaviour.ValidateBasic which is called by the 02-client keeper.
         // verify first signature
-        self.verify_signature_and_data(_misbehaviour.clone(), _misbehaviour.signature_one.clone())
+        self.verify_signature_and_data(misbehaviour.clone(), misbehaviour.signature_one.clone())
             .map_err(|_| ClientError::Other {
                 description: "failed to verify signature one".into(),
             })?;
 
         // verify second signature
-        self.verify_signature_and_data(_misbehaviour.clone(), _misbehaviour.signature_two)
+        self.verify_signature_and_data(misbehaviour.clone(), misbehaviour.signature_two)
             .map_err(|_| ClientError::Other {
                 description: "failed to verify signature one".into(),
             })
@@ -44,16 +47,19 @@ impl ClientState {
         misbehaviour: SmMisbehaviour,
         signature_and_data: SignatureAndData,
     ) -> Result<(), ClientError> {
-        // let sign_bytes = SignBytes {
-        //     sequence: misbehaviour.sequence.revision_height(),
-        //     timestamp: signature_and_data.timestamp.nanoseconds(),
-        //     diversifier: self.consensus_state.diversifier.clone(),
-        //     data_type: DataType::Header,
-        //     data: signature_and_data.data,
-        // };
-        // let data = sign_bytes.encode_vec();
-        // todo (davirian) ref: https://github.com/cosmos/ibc-go/blob/6f1d8d672705c6e8f5b74a396d883e2834a6b943/modules/light-clients/06-solomachine/types/misbehaviour_handle.go#L52
-        let data = vec![];
+        // do not check misbehaviour timestamp since we want to allow processing of past misbehaviour
+        let _merkle_path =
+            MerklePath::decode(&*signature_and_data.path).map_err(|e| ClientError::Other {
+                description: format!("{}", e),
+            })?;
+        let sign_bytes = SignBytes {
+            sequence: misbehaviour.sequence.revision_height(),
+            timestamp: signature_and_data.timestamp.nanoseconds(),
+            diversifier: self.consensus_state.diversifier.clone(),
+            path: signature_and_data.path,
+            data: signature_and_data.data,
+        };
+        let data = sign_bytes.encode_vec();
 
         let signature_and_data = SignatureAndData::decode_vec(&signature_and_data.signature)
             .map_err(|_| ClientError::Other {
@@ -73,13 +79,13 @@ impl ClientState {
         _trusted_consensus_state: &SmConsensusState,
         _current_timestamp: Timestamp,
     ) -> Result<(), ClientError> {
-        todo!()
+        Ok(())
     }
 
     pub fn check_for_misbehaviour_misbehavior(
         &self,
         _misbehaviour: &SmMisbehaviour,
     ) -> Result<bool, ClientError> {
-        todo!()
+        Ok(true)
     }
 }
