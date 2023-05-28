@@ -25,6 +25,7 @@ pub struct ConsensusState {
     /// misbehaviour.
     pub diversifier: String,
     pub timestamp: Timestamp,
+    root: CommitmentRoot,
 }
 
 impl ConsensusState {
@@ -33,6 +34,7 @@ impl ConsensusState {
             public_key,
             diversifier,
             timestamp,
+            root: CommitmentRoot::from(vec![]),
         }
     }
 
@@ -62,7 +64,7 @@ impl ConsensusState {
 
 impl ibc::core::ics02_client::consensus_state::ConsensusState for ConsensusState {
     fn root(&self) -> &CommitmentRoot {
-        todo!()
+        &self.root
     }
 
     fn timestamp(&self) -> Timestamp {
@@ -84,6 +86,7 @@ impl TryFrom<RawSmConsensusState> for ConsensusState {
             public_key,
             diversifier: raw.diversifier,
             timestamp,
+            root: CommitmentRoot::from(vec![]),
         })
     }
 }

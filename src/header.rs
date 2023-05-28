@@ -44,7 +44,8 @@ impl Display for Header {
 
 impl ibc::core::ics02_client::header::Header for Header {
     fn height(&self) -> Height {
-        todo!()
+        // because Header proto have not sequence field, so here use timestamp to create height
+        Height::new(0, self.timestamp.nanoseconds()).expect("contruct header height failed")
     }
 
     fn timestamp(&self) -> Timestamp {

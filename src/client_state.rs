@@ -171,9 +171,9 @@ impl Ics2ClientState for ClientState {
     /// Helper function to verify the upgrade client procedure.
     /// Resets all fields except the blockchain-specific ones,
     /// and updates the given fields.
-    // ref: https://github.com/cosmos/ibc-go/blob/6f1d8d672705c6e8f5b74a396d883e2834a6b943/modules/light-clients/06-solomachine/types/client_state.go#L67
+    // ref: https://github.com/cosmos/ibc-go/blob/3765dfc3b89b16c81abcc3e0b1ad5823d7f7eaa0/modules/light-clients/06-solomachine/client_state.go#L76
     fn zero_custom_fields(&mut self) {
-        self.is_frozen = false;
+        panic!("ZeroCustomFields is not implemented as the solo machine implementation does not support upgrades.")
     }
 
     fn initialise(&self, consensus_state: Any) -> Result<Box<dyn ConsensusState>, ClientError> {
@@ -250,11 +250,11 @@ impl Ics2ClientState for ClientState {
             description: format!("decode SmHeader Error({})", e),
         })?;
 
-        let consensus_state = SmConsensusState {
-            public_key: sm_header.new_public_key,
-            diversifier: sm_header.new_diversifier,
-            timestamp: sm_header.timestamp,
-        };
+        let consensus_state = SmConsensusState::new(
+            sm_header.new_public_key,
+            sm_header.new_diversifier,
+            sm_header.timestamp,
+        );
         let mut new_client_state = self.clone();
         new_client_state.sequence.increment();
         new_client_state.consensus_state = consensus_state;
