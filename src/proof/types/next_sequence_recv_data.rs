@@ -2,6 +2,7 @@ use crate::error::Error;
 use crate::prelude::*;
 use ibc_proto::ibc::lightclients::solomachine::v2::NextSequenceRecvData as RawNextSequenceRecvData;
 use ibc_proto::protobuf::Protobuf;
+use prost::Message;
 
 /// NextSequenceRecvData returns the SignBytes data for verification of the next
 /// sequence to be received.
@@ -9,7 +10,7 @@ use ibc_proto::protobuf::Protobuf;
 #[derive(Clone, PartialEq)]
 pub struct NextSequenceRecvData {
     pub path: Vec<u8>,
-    pub next_seq_recv: u64,
+    pub next_seq_recv: Vec<u8>,
 }
 
 impl Protobuf<RawNextSequenceRecvData> for NextSequenceRecvData {}
@@ -20,7 +21,7 @@ impl TryFrom<RawNextSequenceRecvData> for NextSequenceRecvData {
     fn try_from(raw: RawNextSequenceRecvData) -> Result<Self, Self::Error> {
         Ok(Self {
             path: raw.path,
-            next_seq_recv: raw.next_seq_recv,
+            next_seq_recv: raw.next_seq_recv.encode_to_vec(),
         })
     }
 }
@@ -29,7 +30,7 @@ impl From<NextSequenceRecvData> for RawNextSequenceRecvData {
     fn from(value: NextSequenceRecvData) -> Self {
         Self {
             path: value.path,
-            next_seq_recv: value.next_seq_recv,
+            next_seq_recv: u64::decode(&*value.next_seq_recv).expect("decode next seq recv failed"),
         }
     }
 }

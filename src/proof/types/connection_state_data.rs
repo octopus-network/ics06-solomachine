@@ -1,8 +1,10 @@
 use crate::error::Error;
 use crate::prelude::*;
 use ibc::core::ics03_connection::connection::ConnectionEnd;
+use ibc_proto::ibc::core::connection::v1::ConnectionEnd as RawConnectionEnd;
 use ibc_proto::ibc::lightclients::solomachine::v2::ConnectionStateData as RawConnectionStateData;
 use ibc_proto::protobuf::Protobuf;
+use prost::Message;
 
 /// ConnectionStateData returns the SignBytes data for connection state
 /// verification.
@@ -10,7 +12,7 @@ use ibc_proto::protobuf::Protobuf;
 #[derive(Clone, PartialEq)]
 pub struct ConnectionStateData {
     pub path: Vec<u8>,
-    pub connection: ConnectionEnd,
+    pub connection: Vec<u8>,
 }
 
 impl Protobuf<RawConnectionStateData> for ConnectionStateData {}
@@ -24,8 +26,7 @@ impl TryFrom<RawConnectionStateData> for ConnectionStateData {
             connection: raw
                 .connection
                 .ok_or(Error::ConnectionEndIsEmpty)?
-                .try_into()
-                .map_err(Error::ConnectionError)?,
+                .encode_to_vec(),
         })
     }
 }
@@ -34,7 +35,9 @@ impl From<ConnectionStateData> for RawConnectionStateData {
     fn from(value: ConnectionStateData) -> Self {
         Self {
             path: value.path,
-            connection: Some(value.connection.into()),
+            connection: Some(
+                RawConnectionEnd::decode(&*value.connection).expect("Decode connectionEnd Failed"),
+            ),
         }
     }
 }

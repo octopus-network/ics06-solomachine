@@ -1,8 +1,12 @@
 use crate::consensus_state::ConsensusState;
 use crate::error::Error;
 use crate::prelude::*;
+use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v2::ConsensusStateData as RawConsensusStateData;
 use ibc_proto::protobuf::Protobuf;
+
+pub const SOLOMACHINE_CONSENSUS_STATE_DATA_TYPE_URL: &str =
+    "/ibc.lightclients.solomachine.v1.ConsensusStateData";
 
 /// ConsensusStateData returns the SignBytes data for consensus state
 /// verification.
@@ -11,7 +15,7 @@ use ibc_proto::protobuf::Protobuf;
 pub struct ConsensusStateData {
     pub path: Vec<u8>,
     // ics06 solomachine client consensus state
-    pub consensus_state: ConsensusState,
+    pub consensus_state: Vec<u8>,
 }
 
 impl Protobuf<RawConsensusStateData> for ConsensusStateData {}
@@ -25,8 +29,7 @@ impl TryFrom<RawConsensusStateData> for ConsensusStateData {
             consensus_state: raw
                 .consensus_state
                 .ok_or(Error::ConsensusStateIsEmpty)?
-                .try_into()
-                .map_err(Error::ClientError)?,
+                .value,
         })
     }
 }
@@ -35,7 +38,10 @@ impl From<ConsensusStateData> for RawConsensusStateData {
     fn from(value: ConsensusStateData) -> Self {
         Self {
             path: value.path,
-            consensus_state: Some(value.consensus_state.into()),
+            consensus_state: Some(Any {
+                type_url: SOLOMACHINE_CONSENSUS_STATE_DATA_TYPE_URL.to_string(),
+                value: value.consensus_state,
+            }),
         }
     }
 }

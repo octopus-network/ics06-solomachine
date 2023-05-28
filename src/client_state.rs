@@ -7,7 +7,11 @@ use crate::prelude::*;
 use crate::proof::types::sign_bytes::SignBytes;
 use crate::proof::types::timestamped_signature_data::TimestampedSignatureData;
 use crate::proof::types::DataType;
-use crate::proof::verify_signature;
+use crate::proof::{
+    channel_state_sign_bytes, client_state_sign_bytes, connection_state_sign_bytes,
+    consensus_state_sign_bytes, next_sequence_recv_sign_bytes, packet_acknowledgement_sign_bytes,
+    packet_commitment_sign_bytes, packet_receipt_absence_sign_bytes, verify_signature,
+};
 use crate::signature_and_data::SignatureAndData;
 use core::time::Duration;
 use ibc::core::ics02_client::client_state::UpdateKind;
@@ -15,9 +19,11 @@ use ibc::core::ics02_client::client_state::{ClientState as Ics2ClientState, Upda
 use ibc::core::ics02_client::client_type::ClientType;
 use ibc::core::ics02_client::consensus_state::ConsensusState;
 use ibc::core::ics02_client::error::ClientError;
+use ibc::core::ics03_connection::connection::ConnectionEnd;
 use ibc::core::ics23_commitment::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
+use ibc::core::ics23_commitment::merkle::apply_prefix;
 use ibc::core::ics24_host::identifier::{ChainId, ClientId};
 use ibc::core::ics24_host::path::ClientStatePath;
 use ibc::core::ics24_host::path::Path;
@@ -353,42 +359,160 @@ impl Ics2ClientState for ClientState {
     // proof of the existence of a value at a given Path.
     fn verify_membership(
         &self,
-        _prefix: &CommitmentPrefix,
+        prefix: &CommitmentPrefix,
         proof: &CommitmentProofBytes,
         _root: &CommitmentRoot,
         path: Path,
         value: Vec<u8>,
     ) -> Result<(), ClientError> {
-        let height = self.sequence.increment();
-        let (public_key, sig_data, timestamp, sequence) =
-            self.produce_verification_args(&height, _prefix, proof)?;
-        let data_type = match path {
-            Path::ClientState(_) => DataType::ClientState,
-            Path::ClientConsensusState(_) => DataType::ConsensusState,
-            Path::ClientConnection(_) => DataType::ConnectionState,
-            Path::Connection(_) => DataType::ConnectionState,
-            Path::Ports(_) => DataType::Header,
-            Path::ChannelEnd(_) => DataType::ChannelState,
-            Path::SeqSend(_) => DataType::Header,
-            Path::SeqRecv(_) => DataType::NextSequenceRecv,
-            Path::SeqAck(_) => DataType::Header,
-            Path::Commitment(_) => DataType::PacketCommitment,
-            Path::Ack(_) => DataType::PacketAcknowledgement,
-            Path::Receipt(_) => DataType::Header,
-            Path::Upgrade(_) => DataType::Header,
-        };
-        let sign_bytes = SignBytes {
-            sequence: sequence.revision_height(),
-            timestamp: timestamp.nanoseconds(),
-            diversifier: self.consensus_state.diversifier.clone(),
-            data_type,
-            data: value,
-        };
-        let sign_bz = sign_bytes.encode_vec();
+        match path {
+            // VerifyClientState verifies a proof of the client state of the running chain
+            // stored on the solo machine.
+            Path::ClientState(client_state_path) => {
+                // NOTE: the proof height sequence is incremented by one due to the connection handshake verification ordering
+                let height = self.sequence.increment();
+                let (public_key, sig_data, timestamp, sequence) =
+                    self.produce_verification_args(&height, prefix, proof)?;
+                let path = apply_prefix(prefix, vec![client_state_path.to_string()]);
+                let sign_bz = client_state_sign_bytes(
+                    sequence.revision_height(),
+                    timestamp.nanoseconds(),
+                    self.consensus_state.clone().diversifier,
+                    path,
+                    value,
+                );
 
-        verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-            description: e.to_string(),
-        })
+                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
+                    description: e.to_string(),
+                })
+            }
+            Path::ClientConsensusState(client_consensus_state_path) => {
+                // NOTE: the proof height sequence is incremented by one due to the connection handshake verification ordering
+                let height = self.sequence.increment();
+                let (public_key, sig_data, timestamp, sequence) =
+                    self.produce_verification_args(&height, prefix, proof)?;
+                let path = apply_prefix(prefix, vec![client_consensus_state_path.to_string()]);
+                let sign_bz = consensus_state_sign_bytes(
+                    sequence.revision_height(),
+                    timestamp.nanoseconds(),
+                    self.consensus_state.clone().diversifier,
+                    path,
+                    value,
+                );
+
+                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
+                    description: e.to_string(),
+                })
+            }
+            Path::ClientConnection(_value) => Ok(()),
+            Path::Connection(connection_path) => {
+                let height = self.sequence;
+                let (public_key, sig_data, timestamp, sequence) =
+                    self.produce_verification_args(&height, prefix, proof)?;
+                let path = apply_prefix(prefix, vec![connection_path.to_string()]);
+
+                let sign_bz = connection_state_sign_bytes(
+                    sequence.revision_height(),
+                    timestamp.nanoseconds(),
+                    self.consensus_state.clone().diversifier,
+                    path,
+                    value,
+                );
+                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
+                    description: e.to_string(),
+                })
+            }
+            Path::Ports(_value) => Ok(()),
+            Path::ChannelEnd(channel_end_path) => {
+                let height = self.sequence;
+                let (public_key, sig_data, timestamp, sequence) =
+                    self.produce_verification_args(&height, prefix, proof)?;
+                let path = apply_prefix(prefix, vec![channel_end_path.to_string()]);
+
+                let sign_bz = channel_state_sign_bytes(
+                    sequence.revision_height(),
+                    timestamp.nanoseconds(),
+                    self.consensus_state.clone().diversifier,
+                    path,
+                    value,
+                );
+                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
+                    description: e.to_string(),
+                })
+            }
+            Path::SeqSend(_value) => Ok(()),
+            Path::SeqRecv(next_sequence_recv_path) => {
+                let height = self.sequence;
+                let (public_key, sig_data, timestamp, sequence) =
+                    self.produce_verification_args(&height, prefix, proof)?;
+                let path = apply_prefix(prefix, vec![next_sequence_recv_path.to_string()]);
+
+                let sign_bz = next_sequence_recv_sign_bytes(
+                    sequence.revision_height(),
+                    timestamp.nanoseconds(),
+                    self.consensus_state.clone().diversifier,
+                    path,
+                    value,
+                );
+                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
+                    description: e.to_string(),
+                })
+            }
+            Path::SeqAck(_value) => Ok(()),
+            Path::Commitment(packet_commitment_path) => {
+                let height = self.sequence;
+                let (public_key, sig_data, timestamp, sequence) =
+                    self.produce_verification_args(&height, prefix, proof)?;
+                let path = apply_prefix(prefix, vec![packet_commitment_path.to_string()]);
+
+                let sign_bz = packet_commitment_sign_bytes(
+                    sequence.revision_height(),
+                    timestamp.nanoseconds(),
+                    self.consensus_state.clone().diversifier,
+                    path,
+                    value,
+                );
+                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
+                    description: e.to_string(),
+                })
+            }
+            Path::Ack(packet_acknowledgement_path) => {
+                let height = self.sequence;
+                let (public_key, sig_data, timestamp, sequence) =
+                    self.produce_verification_args(&height, prefix, proof)?;
+                let path = apply_prefix(prefix, vec![packet_acknowledgement_path.to_string()]);
+
+                let sign_bz = packet_acknowledgement_sign_bytes(
+                    sequence.revision_height(),
+                    timestamp.nanoseconds(),
+                    self.consensus_state.clone().diversifier,
+                    path,
+                    value,
+                );
+                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
+                    description: e.to_string(),
+                })
+            }
+            Path::Receipt(_packet_receipt_absence_path) => {
+                // let height = self.sequence;
+                // let (public_key, sig_data, timestamp, sequence) =
+                //     self.produce_verification_args(&height, prefix, proof)?;
+                // let path = apply_prefix(prefix, vec![packet_receipt_absence_path.to_string()]);
+
+                // let sign_bz = packet_receipt_absence_sign_bytes(
+                //     sequence.revision_height(),
+                //     timestamp.nanoseconds(),
+                //     self.consensus_state.clone().diversifier,
+                //     path,
+                //     value,
+                // );
+                // verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
+                //     description: e.to_string(),
+                // })
+                Ok(())
+            }
+            Path::Upgrade(_value) => Ok(()),
+        }
     }
 
     // Verify_non_membership is a generic proof verification method which
