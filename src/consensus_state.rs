@@ -5,7 +5,7 @@ use ibc::core::ics02_client::error::ClientError;
 use ibc::core::ics23_commitment::commitment::CommitmentRoot;
 use ibc::core::timestamp::Timestamp;
 use ibc_proto::google::protobuf::Any;
-use ibc_proto::ibc::lightclients::solomachine::v2::ConsensusState as RawSmConsensusState;
+use ibc_proto::ibc::lightclients::solomachine::v3::ConsensusState as RawSmConsensusState;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 

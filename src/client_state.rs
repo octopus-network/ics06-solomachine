@@ -6,12 +6,7 @@ use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
 use crate::prelude::*;
 use crate::proof::types::sign_bytes::SignBytes;
 use crate::proof::types::timestamped_signature_data::TimestampedSignatureData;
-use crate::proof::types::DataType;
-use crate::proof::{
-    channel_state_sign_bytes, client_state_sign_bytes, connection_state_sign_bytes,
-    consensus_state_sign_bytes, next_sequence_recv_sign_bytes, packet_acknowledgement_sign_bytes,
-    packet_commitment_sign_bytes, packet_receipt_absence_sign_bytes, verify_signature,
-};
+use crate::proof::verify_signature;
 use crate::signature_and_data::SignatureAndData;
 use core::time::Duration;
 use ibc::core::ics02_client::client_state::UpdateKind;
@@ -19,7 +14,6 @@ use ibc::core::ics02_client::client_state::{ClientState as Ics2ClientState, Upda
 use ibc::core::ics02_client::client_type::ClientType;
 use ibc::core::ics02_client::consensus_state::ConsensusState;
 use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics03_connection::connection::ConnectionEnd;
 use ibc::core::ics23_commitment::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
@@ -32,7 +26,7 @@ use ibc::core::{ExecutionContext, ValidationContext};
 use ibc::Height;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::core::commitment::v1::MerkleProof as RawMerkleProof;
-use ibc_proto::ibc::lightclients::solomachine::v2::ClientState as RawSmClientState;
+use ibc_proto::ibc::lightclients::solomachine::v3::ClientState as RawSmClientState;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
@@ -51,24 +45,15 @@ pub struct ClientState {
     /// frozen sequence of the solo machine
     pub is_frozen: bool,
     pub consensus_state: SmConsensusState,
-    /// when set to true, will allow governance to update a solo machine client.
-    /// The client will be unfrozen if it is frozen.
-    pub allow_update_after_proposal: bool,
 }
 
 impl ClientState {
     /// Create a new ClientState Instance.
-    pub fn new(
-        sequence: Height,
-        is_frozen: bool,
-        consensus_state: SmConsensusState,
-        allow_update_after_proposal: bool,
-    ) -> Self {
+    pub fn new(sequence: Height, is_frozen: bool, consensus_state: SmConsensusState) -> Self {
         Self {
             sequence,
             is_frozen,
             consensus_state,
-            allow_update_after_proposal,
         }
     }
 
@@ -103,26 +88,8 @@ impl ClientState {
     // consensus state, the unmarshalled proof representing the signature and timestamp.
     pub fn produce_verification_args(
         &self,
-        height: &Height,
-        prefix: &CommitmentPrefix,
         proof: &CommitmentProofBytes,
-    ) -> Result<(PublicKey, SignatureAndData, Timestamp, Height), Error> {
-        if height.revision_number() != 0 {
-            return Err(Error::Other(format!(
-                "revision must be 0 for solomachine, got revision-number: {}",
-                height.revision_number()
-            )));
-        }
-
-        // sequence is encoded in the revision height of height struct
-        let sequence = height.revision_height();
-        if prefix.as_bytes().is_empty() {
-            return Err(Error::Other("prefix cannot be empty".into()));
-        }
-
-        // todo missing validate check Prefix
-        // ref: https://github.com/cosmos/ibc-go/blob/6f1d8d672705c6e8f5b74a396d883e2834a6b943/modules/light-clients/06-solomachine/types/client_state.go#L438
-
+    ) -> Result<(PublicKey, SignatureAndData, Timestamp, u64), Error> {
         let proof = Vec::<u8>::from(proof.clone());
         if proof.is_empty() {
             return Err(Error::Other("proof cannot be empty".into()));
@@ -136,21 +103,12 @@ impl ClientState {
         })?;
 
         let timestamp = timestamped_sig_data.timestamp;
-
         if timestamped_sig_data.signature_data.is_empty() {
             return Err(Error::Other("signature data cannot be empty".into()));
         }
 
         let signature_and_data = SignatureAndData::decode_vec(&timestamped_sig_data.signature_data)
             .map_err(|_| Error::Other("failed to decode SignatureData".into()))?;
-
-        let latest_sequence = self.sequence.revision_height();
-        if latest_sequence != sequence {
-            return Err(Error::Other(format!(
-                "client state sequence != proof sequence ({} != {})",
-                latest_sequence, sequence,
-            )));
-        }
 
         if self.consensus_state.timestamp > timestamp {
             return Err(Error::Other(format!(
@@ -159,8 +117,9 @@ impl ClientState {
             )));
         }
 
+        let latest_sequence = self.sequence.revision_height();
         let public_key = self.consensus_state.public_key();
-        Ok((public_key, signature_and_data, timestamp, *height))
+        Ok((public_key, signature_and_data, timestamp, latest_sequence))
     }
 }
 
@@ -215,7 +174,6 @@ impl Ics2ClientState for ClientState {
     // ref: https://github.com/cosmos/ibc-go/blob/6f1d8d672705c6e8f5b74a396d883e2834a6b943/modules/light-clients/06-solomachine/types/client_state.go#L67
     fn zero_custom_fields(&mut self) {
         self.is_frozen = false;
-        self.allow_update_after_proposal = false
     }
 
     fn initialise(&self, consensus_state: Any) -> Result<Box<dyn ConsensusState>, ClientError> {
@@ -303,7 +261,8 @@ impl Ics2ClientState for ClientState {
 
         ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into_box())?;
 
-        Ok(vec![sm_header.sequence])
+        // todo
+        Ok(vec![])
     }
 
     /// update_state_on_misbehaviour should perform appropriate state changes on
@@ -365,154 +324,25 @@ impl Ics2ClientState for ClientState {
         path: Path,
         value: Vec<u8>,
     ) -> Result<(), ClientError> {
-        match path {
-            // VerifyClientState verifies a proof of the client state of the running chain
-            // stored on the solo machine.
-            Path::ClientState(client_state_path) => {
-                // NOTE: the proof height sequence is incremented by one due to the connection handshake verification ordering
-                let height = self.sequence.increment();
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![client_state_path.to_string()]);
-                let sign_bz = client_state_sign_bytes(
-                    sequence.revision_height(),
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::ClientConsensusState(client_consensus_state_path) => {
-                // NOTE: the proof height sequence is incremented by one due to the connection handshake verification ordering
-                let height = self.sequence.increment();
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![client_consensus_state_path.to_string()]);
-                let sign_bz = consensus_state_sign_bytes(
-                    sequence.revision_height(),
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::ClientConnection(_value) => Ok(()),
-            Path::Connection(connection_path) => {
-                let height = self.sequence;
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![connection_path.to_string()]);
-
-                let sign_bz = connection_state_sign_bytes(
-                    sequence.revision_height(),
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::Ports(_value) => Ok(()),
-            Path::ChannelEnd(channel_end_path) => {
-                let height = self.sequence;
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![channel_end_path.to_string()]);
-
-                let sign_bz = channel_state_sign_bytes(
-                    sequence.revision_height(),
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::SeqSend(_value) => Ok(()),
-            Path::SeqRecv(next_sequence_recv_path) => {
-                let height = self.sequence;
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![next_sequence_recv_path.to_string()]);
-
-                let sign_bz = next_sequence_recv_sign_bytes(
-                    sequence.revision_height(),
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::SeqAck(_value) => Ok(()),
-            Path::Commitment(packet_commitment_path) => {
-                let height = self.sequence;
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![packet_commitment_path.to_string()]);
-
-                let sign_bz = packet_commitment_sign_bytes(
-                    sequence.revision_height(),
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::Ack(packet_acknowledgement_path) => {
-                let height = self.sequence;
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![packet_acknowledgement_path.to_string()]);
-
-                let sign_bz = packet_acknowledgement_sign_bytes(
-                    sequence.revision_height(),
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::Receipt(_packet_receipt_absence_path) => {
-                // let height = self.sequence;
-                // let (public_key, sig_data, timestamp, sequence) =
-                //     self.produce_verification_args(&height, prefix, proof)?;
-                // let path = apply_prefix(prefix, vec![packet_receipt_absence_path.to_string()]);
-
-                // let sign_bz = packet_receipt_absence_sign_bytes(
-                //     sequence.revision_height(),
-                //     timestamp.nanoseconds(),
-                //     self.consensus_state.clone().diversifier,
-                //     path,
-                //     value,
-                // );
-                // verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                //     description: e.to_string(),
-                // })
-                Ok(())
-            }
-            Path::Upgrade(_value) => Ok(()),
+        let (public_key, sig_data, timestamp, sequence) = self.produce_verification_args(proof)?;
+        let merkle_path = apply_prefix(prefix, vec![path.to_string()]);
+        if merkle_path.key_path.is_empty() {
+            return Err(ClientError::Other {
+                description: "path is empty".to_string(),
+            });
         }
+        let sign_bytes = SignBytes {
+            sequence,
+            timestamp: timestamp.nanoseconds(),
+            diversifier: self.consensus_state.diversifier.clone(),
+            path: merkle_path.encode_to_vec(),
+            data: value,
+        };
+        let sign_bz = sign_bytes.encode_vec();
+
+        verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
+            description: e.to_string(),
+        })
     }
 
     // Verify_non_membership is a generic proof verification method which
@@ -524,34 +354,23 @@ impl Ics2ClientState for ClientState {
     // and a standardized path (as defined in ICS 24).
     fn verify_non_membership(
         &self,
-        _prefix: &CommitmentPrefix,
+        prefix: &CommitmentPrefix,
         proof: &CommitmentProofBytes,
         _root: &CommitmentRoot,
         path: Path,
     ) -> Result<(), ClientError> {
-        let height = self.sequence.increment();
-        let (public_key, sig_data, timestamp, sequence) =
-            self.produce_verification_args(&height, _prefix, proof)?;
-        let data_type = match path {
-            Path::ClientState(_) => DataType::ClientState,
-            Path::ClientConsensusState(_) => DataType::ConsensusState,
-            Path::ClientConnection(_) => DataType::ConnectionState,
-            Path::Connection(_) => DataType::ConnectionState,
-            Path::Ports(_) => DataType::Header,
-            Path::ChannelEnd(_) => DataType::ChannelState,
-            Path::SeqSend(_) => DataType::Header,
-            Path::SeqRecv(_) => DataType::NextSequenceRecv,
-            Path::SeqAck(_) => DataType::Header,
-            Path::Commitment(_) => DataType::PacketCommitment,
-            Path::Ack(_) => DataType::PacketAcknowledgement,
-            Path::Receipt(_) => DataType::Header,
-            Path::Upgrade(_) => DataType::Header,
-        };
+        let (public_key, sig_data, timestamp, sequence) = self.produce_verification_args(proof)?;
+        let merkle_path = apply_prefix(prefix, vec![path.to_string()]);
+        if merkle_path.key_path.is_empty() {
+            return Err(ClientError::Other {
+                description: "path is empty".to_string(),
+            });
+        }
         let sign_bytes = SignBytes {
-            sequence: sequence.revision_height(),
+            sequence,
             timestamp: timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
-            data_type,
+            path: merkle_path.encode_to_vec(),
             data: vec![],
         };
         let sign_bz = sign_bytes.encode_vec();
@@ -579,7 +398,6 @@ impl TryFrom<RawSmClientState> for ClientState {
             sequence,
             is_frozen: raw.is_frozen,
             consensus_state,
-            allow_update_after_proposal: raw.allow_update_after_proposal,
         })
     }
 }
@@ -592,7 +410,6 @@ impl From<ClientState> for RawSmClientState {
             sequence,
             is_frozen: value.is_frozen,
             consensus_state: Some(value.consensus_state.into()),
-            allow_update_after_proposal: value.allow_update_after_proposal,
         }
     }
 }

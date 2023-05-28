@@ -1,7 +1,7 @@
 use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
 use crate::prelude::*;
-use ibc_proto::ibc::lightclients::solomachine::v2::HeaderData as RawHeaderData;
+use ibc_proto::ibc::lightclients::solomachine::v3::HeaderData as RawHeaderData;
 use ibc_proto::protobuf::Protobuf;
 
 /// HeaderData returns the SignBytes data for update verification.

@@ -3,8 +3,6 @@ use crate::consensus_state::ConsensusState as SmConsensusState;
 use crate::header::Header as SmHeader;
 use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
 use crate::prelude::*;
-use crate::proof::types::sign_bytes::SignBytes;
-use crate::proof::types::DataType;
 use crate::proof::verify_signature;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;

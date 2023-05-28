@@ -7,7 +7,7 @@ use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;
 use ibc::Height;
 use ibc_proto::google::protobuf::Any;
-use ibc_proto::ibc::lightclients::solomachine::v2::Header as RawSmHeader;
+use ibc_proto::ibc::lightclients::solomachine::v3::Header as RawSmHeader;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
@@ -17,8 +17,6 @@ pub const SOLOMACHINE_HEADER_TYPE_URL: &str = "/ibc.lightclients.solomachine.v1.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, PartialEq)]
 pub struct Header {
-    /// sequence to update solo machine public key at
-    pub sequence: Height,
     pub timestamp: Timestamp,
     pub signature: Vec<u8>,
     pub new_public_key: PublicKey,
@@ -35,8 +33,7 @@ impl Display for Header {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(
             f,
-            "Header {{ sequence: {}, timestamp: {}, signature: {:?}, new_public_key: {:?}, new_diversifier: {} }}",
-            self.sequence,
+            "Header {{ timestamp: {}, signature: {:?}, new_public_key: {:?}, new_diversifier: {} }}",
             self.timestamp,
             self.signature,
             self.new_public_key,
@@ -47,7 +44,7 @@ impl Display for Header {
 
 impl ibc::core::ics02_client::header::Header for Header {
     fn height(&self) -> Height {
-        self.sequence
+        todo!()
     }
 
     fn timestamp(&self) -> Timestamp {
@@ -61,7 +58,6 @@ impl TryFrom<RawSmHeader> for Header {
     type Error = Error;
 
     fn try_from(raw: RawSmHeader) -> Result<Self, Self::Error> {
-        let sequence = Height::new(0, raw.sequence).map_err(Error::InvalidHeight)?;
         let timestamp =
             Timestamp::from_nanoseconds(raw.timestamp).map_err(Error::ParseTimeError)?;
         let signature = raw.signature;
@@ -71,7 +67,6 @@ impl TryFrom<RawSmHeader> for Header {
                 .map_err(Error::PublicKeyParseFailed)?;
         let new_diversifier = raw.new_diversifier;
         Ok(Self {
-            sequence,
             timestamp,
             signature,
             new_public_key,
@@ -83,7 +78,6 @@ impl TryFrom<RawSmHeader> for Header {
 impl From<Header> for RawSmHeader {
     fn from(value: Header) -> Self {
         Self {
-            sequence: value.sequence.revision_height(),
             timestamp: value.timestamp.nanoseconds(),
             signature: value.signature,
             new_public_key: Some(value.new_public_key.to_any().expect("never failed")),

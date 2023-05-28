@@ -3,10 +3,9 @@ use crate::prelude::*;
 use crate::signature_and_data::SignatureAndData;
 use bytes::Buf;
 use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics24_host::identifier::ClientId;
 use ibc::Height;
 use ibc_proto::google::protobuf::Any;
-use ibc_proto::ibc::lightclients::solomachine::v2::Misbehaviour as RawSmMisbehaviour;
+use ibc_proto::ibc::lightclients::solomachine::v3::Misbehaviour as RawSmMisbehaviour;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
@@ -14,10 +13,8 @@ pub const SOLOMACHINE_MISBEHAVIOUR_TYPE_URL: &str = "/ibc.lightclients.solomachi
 
 /// Misbehaviour defines misbehaviour for a solo machine which consists
 /// of a sequence and two signatures over different messages at that sequence.
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, PartialEq)]
 pub struct Misbehaviour {
-    pub client_id: ClientId,
     pub sequence: Height,
     pub signature_one: SignatureAndData,
     pub signature_two: SignatureAndData,
@@ -29,12 +26,6 @@ impl TryFrom<RawSmMisbehaviour> for Misbehaviour {
     type Error = Error;
 
     fn try_from(raw: RawSmMisbehaviour) -> Result<Self, Self::Error> {
-        let client_id: ClientId = raw
-            .client_id
-            .parse()
-            .map_err(|_| Error::InvalidRawClientId {
-                client_id: raw.client_id.clone(),
-            })?;
         let sequence = Height::new(0, raw.sequence).map_err(Error::InvalidHeight)?;
         let signature_one: SignatureAndData = raw
             .signature_one
@@ -46,7 +37,6 @@ impl TryFrom<RawSmMisbehaviour> for Misbehaviour {
             .try_into()?;
 
         Ok(Self {
-            client_id,
             sequence,
             signature_one,
             signature_two,
@@ -56,11 +46,9 @@ impl TryFrom<RawSmMisbehaviour> for Misbehaviour {
 
 impl From<Misbehaviour> for RawSmMisbehaviour {
     fn from(value: Misbehaviour) -> Self {
-        let client_id = value.client_id.to_string();
         let sequence = value.sequence.revision_height();
 
         Self {
-            client_id,
             sequence,
             signature_one: Some(value.signature_one.into()),
             signature_two: Some(value.signature_two.into()),
@@ -112,8 +100,8 @@ impl core::fmt::Display for Misbehaviour {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
         write!(
             f,
-            "ClientId({}), Sequence({}), SignatureOne({}), SignatureTwo({})",
-            self.client_id, self.sequence, self.signature_two, self.signature_two
+            "Sequence({}), SignatureOne({}), SignatureTwo({})",
+            self.sequence, self.signature_two, self.signature_two
         )
     }
 }

@@ -1,20 +1,23 @@
 use crate::error::Error;
 use crate::prelude::*;
-use ibc_proto::ibc::lightclients::solomachine::v2::SignBytes as RawSignBytes;
+use core::str::FromStr;
+use ibc::core::ics24_host::path::Path;
+use ibc_proto::ibc::lightclients::solomachine::v3::SignBytes as RawSignBytes;
 
-use super::DataType;
 use ibc_proto::protobuf::Protobuf;
 
 /// SignBytes defines the signed bytes used for signature verification.
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, PartialEq)]
 pub struct SignBytes {
+    /// the sequence number
     pub sequence: u64,
+    /// the proof timestamp
     pub timestamp: u64,
+    /// the public key diversifier
     pub diversifier: String,
-    /// type of the data used
-    pub data_type: DataType,
-    /// marshaled data
+    /// the standardised path bytes
+    pub path: Vec<u8>,
+    /// the marshaled data bytes
     pub data: Vec<u8>,
 }
 
@@ -28,7 +31,7 @@ impl TryFrom<RawSignBytes> for SignBytes {
             sequence: raw.sequence,
             timestamp: raw.timestamp,
             diversifier: raw.diversifier,
-            data_type: DataType::try_from(raw.data_type)?,
+            path: raw.path,
             data: raw.data,
         })
     }
@@ -40,7 +43,7 @@ impl From<SignBytes> for RawSignBytes {
             sequence: value.sequence,
             timestamp: value.timestamp,
             diversifier: value.diversifier,
-            data_type: i32::from(value.data_type),
+            path: value.path,
             data: value.data,
         }
     }
