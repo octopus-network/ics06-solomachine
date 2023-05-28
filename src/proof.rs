@@ -1,15 +1,7 @@
 use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
-use crate::header::Header;
-use crate::proof::types::header_data::HeaderData;
-use crate::proof::types::sign_bytes::SignBytes;
-
 use crate::signature_and_data::SignatureAndData;
-use alloc::string::String;
 use alloc::vec::Vec;
-use ibc_proto::ibc::core::commitment::v1::MerklePath;
-use ibc_proto::protobuf::Protobuf;
-use prost::Message;
 
 pub mod types;
 

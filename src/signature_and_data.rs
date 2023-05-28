@@ -19,7 +19,8 @@ impl core::fmt::Display for SignatureAndData {
             f,
             "signature: {:?}, path: {}, data: {:?}, timestamp: {}",
             self.signature,
-            String::from_utf8(self.path)?,
+            // todo(davirian) need improve
+            String::from_utf8(self.path.clone()).map_err(|_| core::fmt::Error)?,
             self.data,
             self.timestamp
         )
