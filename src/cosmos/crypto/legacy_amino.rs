@@ -5,7 +5,7 @@ use crate::cosmos::error::Error;
 use crate::prelude::*;
 use eyre::Report as ErrorReport;
 use eyre::Result;
-use ibc_proto as proto;
+use ibc_proto::cosmos::crypto::multisig::LegacyAminoPubKey as RawLegacyAminoPubKey;
 use ibc_proto::google::protobuf::Any;
 use prost::Message;
 
@@ -24,7 +24,7 @@ pub struct LegacyAminoMultisig {
 
 impl From<LegacyAminoMultisig> for Any {
     fn from(amino_multisig: LegacyAminoMultisig) -> Any {
-        let proto = proto::cosmos::crypto::multisig::LegacyAminoPubKey {
+        let proto = RawLegacyAminoPubKey {
             threshold: amino_multisig.threshold,
             public_keys: amino_multisig
                 .public_keys
@@ -59,7 +59,7 @@ impl TryFrom<&Any> for LegacyAminoMultisig {
             )));
         }
 
-        let proto = proto::cosmos::crypto::multisig::LegacyAminoPubKey::decode(&*any.value)?;
+        let proto = RawLegacyAminoPubKey::decode(&*any.value)?;
         let public_keys = proto
             .public_keys
             .into_iter()

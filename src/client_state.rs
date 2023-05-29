@@ -5,9 +5,9 @@ use crate::header::Header as SmHeader;
 use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
 use crate::prelude::*;
 use crate::proof::types::sign_bytes::SignBytes;
+use crate::proof::types::signature_and_data::SignatureAndData;
 use crate::proof::types::timestamped_signature_data::TimestampedSignatureData;
 use crate::proof::verify_signature;
-use crate::signature_and_data::SignatureAndData;
 use core::time::Duration;
 use ibc::core::ics02_client::client_state::UpdateKind;
 use ibc::core::ics02_client::client_state::{ClientState as Ics2ClientState, UpdatedState};
@@ -103,12 +103,7 @@ impl ClientState {
         })?;
 
         let timestamp = timestamped_sig_data.timestamp;
-        if timestamped_sig_data.signature_data.is_empty() {
-            return Err(Error::Other("signature data cannot be empty".into()));
-        }
-
-        let signature_and_data = SignatureAndData::decode_vec(&timestamped_sig_data.signature_data)
-            .map_err(|_| Error::Other("failed to decode SignatureData".into()))?;
+        let signature_and_data = timestamped_sig_data.signature_data;
 
         if self.consensus_state.timestamp > timestamp {
             return Err(Error::Other(format!(
@@ -257,12 +252,12 @@ impl Ics2ClientState for ClientState {
         );
         let mut new_client_state = self.clone();
         new_client_state.sequence.increment();
+        let new_height = new_client_state.sequence;
         new_client_state.consensus_state = consensus_state;
 
         ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into_box())?;
 
-        // todo
-        Ok(vec![])
+        Ok(vec![new_height])
     }
 
     /// update_state_on_misbehaviour should perform appropriate state changes on
@@ -335,7 +330,7 @@ impl Ics2ClientState for ClientState {
             sequence,
             timestamp: timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
-            path: merkle_path.encode_to_vec(),
+            path: merkle_path,
             data: value,
         };
         let sign_bz = sign_bytes.encode_vec();
@@ -370,7 +365,7 @@ impl Ics2ClientState for ClientState {
             sequence,
             timestamp: timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
-            path: merkle_path.encode_to_vec(),
+            path: merkle_path,
             data: vec![],
         };
         let sign_bz = sign_bytes.encode_vec();

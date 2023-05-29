@@ -14,7 +14,6 @@ pub mod misbehaviour;
 pub mod prelude;
 pub mod proof;
 pub mod public_key;
-pub mod signature_and_data;
 
 pub(crate) const SOLOMACHINE_CLIENT_TYPE: &str = "07-solomachine";
 

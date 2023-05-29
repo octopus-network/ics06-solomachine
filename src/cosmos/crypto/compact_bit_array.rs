@@ -1,7 +1,7 @@
 //! Compact bit array.
 
 use crate::prelude::*;
-use ibc_proto as proto;
+use ibc_proto::cosmos::crypto::multisig::v1beta1::CompactBitArray as RawCompactBitArray;
 
 /// [`CompactBitArray`] is an implementation of a space efficient bit array.
 ///
@@ -10,14 +10,14 @@ use ibc_proto as proto;
 #[derive(Clone, Debug, PartialEq)]
 pub struct CompactBitArray {
     // TODO(tarcieri): better internal representation for this, e.g. `bitvec`
-    inner: proto::cosmos::crypto::multisig::v1beta1::CompactBitArray,
+    inner: RawCompactBitArray,
 }
 
 impl CompactBitArray {
     /// Create a new [`CompactBitArray`] from a given number of extra
     /// bits stored and a byte slice containing the bits.
     pub fn new(extra_bits_stored: u32, elems: impl Into<Vec<u8>>) -> CompactBitArray {
-        let inner = proto::cosmos::crypto::multisig::v1beta1::CompactBitArray {
+        let inner = RawCompactBitArray {
             extra_bits_stored,
             elems: elems.into(),
         };
@@ -28,16 +28,14 @@ impl CompactBitArray {
 
 impl Eq for CompactBitArray {}
 
-impl From<proto::cosmos::crypto::multisig::v1beta1::CompactBitArray> for CompactBitArray {
-    fn from(proto: proto::cosmos::crypto::multisig::v1beta1::CompactBitArray) -> CompactBitArray {
+impl From<RawCompactBitArray> for CompactBitArray {
+    fn from(proto: RawCompactBitArray) -> CompactBitArray {
         CompactBitArray { inner: proto }
     }
 }
 
-impl From<CompactBitArray> for proto::cosmos::crypto::multisig::v1beta1::CompactBitArray {
-    fn from(
-        bitarray: CompactBitArray,
-    ) -> proto::cosmos::crypto::multisig::v1beta1::CompactBitArray {
+impl From<CompactBitArray> for RawCompactBitArray {
+    fn from(bitarray: CompactBitArray) -> RawCompactBitArray {
         bitarray.inner
     }
 }

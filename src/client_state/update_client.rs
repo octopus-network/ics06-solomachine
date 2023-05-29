@@ -3,12 +3,12 @@ use crate::header::Header as SmHeader;
 use crate::prelude::*;
 use crate::proof::types::header_data::HeaderData;
 use crate::proof::types::sign_bytes::SignBytes;
+use crate::proof::types::signature_and_data::SignatureAndData;
 use crate::proof::verify_signature;
-use crate::signature_and_data::SignatureAndData;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
+use ibc_proto::ibc::core::commitment::v1::MerklePath;
 use ibc_proto::protobuf::Protobuf;
-
 impl ClientState {
     pub fn verify_header(
         &self,
@@ -42,7 +42,9 @@ impl ClientState {
             // SentinelHeaderPath defines a placeholder path value used for headers in solomachine client updates
             // const SentinelHeaderPath = "solomachine:header"
             // ref: https://github.com/cosmos/ibc-go/blob/3765dfc3b89b16c81abcc3e0b1ad5823d7f7eaa0/modules/light-clients/06-solomachine/update.go#L48
-            path: "solomachine:header".to_string().as_bytes().to_vec(),
+            path: MerklePath {
+                key_path: vec!["solomachine:header".to_string()],
+            },
             data: data_bz,
         };
         let data = sign_bytes.encode_vec();

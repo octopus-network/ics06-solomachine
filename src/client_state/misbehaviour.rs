@@ -8,9 +8,7 @@ use crate::proof::verify_signature;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
-use ibc_proto::ibc::core::commitment::v1::MerklePath;
 use ibc_proto::protobuf::Protobuf;
-use prost::Message;
 
 use super::ClientState;
 
@@ -47,11 +45,6 @@ impl ClientState {
         misbehaviour: SmMisbehaviour,
         signature_and_data: SignatureAndData,
     ) -> Result<(), ClientError> {
-        // do not check misbehaviour timestamp since we want to allow processing of past misbehaviour
-        let _merkle_path =
-            MerklePath::decode(&*signature_and_data.path).map_err(|e| ClientError::Other {
-                description: format!("{}", e),
-            })?;
         let sign_bytes = SignBytes {
             sequence: misbehaviour.sequence.revision_height(),
             timestamp: signature_and_data.timestamp.nanoseconds(),
