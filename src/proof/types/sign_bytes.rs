@@ -1,8 +1,9 @@
 use crate::error::Error;
 use crate::prelude::*;
+use ibc_proto::ibc::core::commitment::v1::MerklePath;
 use ibc_proto::ibc::lightclients::solomachine::v3::SignBytes as RawSignBytes;
-
 use ibc_proto::protobuf::Protobuf;
+use prost::Message;
 
 /// SignBytes defines the signed bytes used for signature verification.
 #[derive(Clone, PartialEq)]
@@ -14,7 +15,7 @@ pub struct SignBytes {
     /// the public key diversifier
     pub diversifier: String,
     /// the standardised path bytes
-    pub path: Vec<u8>,
+    pub path: MerklePath,
     /// the marshaled data bytes
     pub data: Vec<u8>,
 }
@@ -25,11 +26,13 @@ impl TryFrom<RawSignBytes> for SignBytes {
     type Error = Error;
 
     fn try_from(raw: RawSignBytes) -> Result<Self, Self::Error> {
+        let path = MerklePath::decode(&*raw.path.as_ref())
+            .map_err(|e| Error::Other(format!("decode MerklePath Failed({})", e)))?;
         Ok(Self {
             sequence: raw.sequence,
             timestamp: raw.timestamp,
             diversifier: raw.diversifier,
-            path: raw.path,
+            path,
             data: raw.data,
         })
     }
@@ -41,7 +44,7 @@ impl From<SignBytes> for RawSignBytes {
             sequence: value.sequence,
             timestamp: value.timestamp,
             diversifier: value.diversifier,
-            path: value.path,
+            path: value.path.encode_to_vec(),
             data: value.data,
         }
     }

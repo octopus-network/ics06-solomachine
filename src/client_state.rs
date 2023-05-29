@@ -330,7 +330,7 @@ impl Ics2ClientState for ClientState {
             sequence,
             timestamp: timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
-            path: merkle_path.encode_to_vec(),
+            path: merkle_path,
             data: value,
         };
         let sign_bz = sign_bytes.encode_vec();
@@ -365,7 +365,7 @@ impl Ics2ClientState for ClientState {
             sequence,
             timestamp: timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
-            path: merkle_path.encode_to_vec(),
+            path: merkle_path,
             data: vec![],
         };
         let sign_bz = sign_bytes.encode_vec();

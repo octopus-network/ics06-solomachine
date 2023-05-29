@@ -1,15 +1,17 @@
 use crate::error::Error;
 use crate::prelude::*;
 use ibc::core::timestamp::Timestamp;
+use ibc_proto::ibc::core::commitment::v1::MerklePath;
 use ibc_proto::ibc::lightclients::solomachine::v3::SignatureAndData as RawSignatureAndData;
 use ibc_proto::protobuf::Protobuf;
+use prost::Message;
 
 /// SignatureAndData contains a signature and the data signed over to create that
 /// signature.
 #[derive(Clone, PartialEq)]
 pub struct SignatureAndData {
     pub signature: Vec<u8>,
-    pub path: Vec<u8>,
+    pub path: MerklePath,
     pub data: Vec<u8>,
     pub timestamp: Timestamp,
 }
@@ -17,12 +19,8 @@ impl core::fmt::Display for SignatureAndData {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
         write!(
             f,
-            "signature: {:?}, path: {}, data: {:?}, timestamp: {}",
-            self.signature,
-            // todo(davirian) need improve
-            String::from_utf8(self.path.clone()).map_err(|_| core::fmt::Error)?,
-            self.data,
-            self.timestamp
+            "signature: {:?}, path: {:?}, data: {:?}, timestamp: {}",
+            self.signature, self.path, self.data, self.timestamp
         )
     }
 }
@@ -37,9 +35,11 @@ impl TryFrom<RawSignatureAndData> for SignatureAndData {
         let data = raw.data;
         let timestamp =
             Timestamp::from_nanoseconds(raw.timestamp).map_err(Error::ParseTimeError)?;
+        let path = MerklePath::decode(&*raw.path.as_ref())
+            .map_err(|e| Error::Other(format!("decode MerklePath Failed({})", e)))?;
         Ok(Self {
             signature,
-            path: raw.path,
+            path,
             data,
             timestamp,
         })
@@ -50,7 +50,7 @@ impl From<SignatureAndData> for RawSignatureAndData {
     fn from(value: SignatureAndData) -> Self {
         Self {
             signature: value.signature,
-            path: value.path,
+            path: value.path.encode_to_vec(),
             data: value.data,
             timestamp: value.timestamp.nanoseconds(),
         }
