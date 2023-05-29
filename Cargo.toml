@@ -20,7 +20,6 @@ k256 = { version = "0.13", features = ["ecdsa", "sha256"], default-features = fa
 tendermint = { version = "0.32", features = ["secp256k1", "rust-crypto"], default-features = false }
 rand_core = { version = "0.6", default-feature = false }
 subtle-encoding = { version = "0.5", default-features = false }
-ecdsa = { version = "0.16", default-features = false }
 
 ## for codec encode or decode
 parity-scale-codec = { version = "3.0.0", default-features = false, features = ["full"], optional = true }
@@ -30,7 +29,7 @@ borsh = {version = "0.10.0", default-features = false, optional = true }
 
 # for publicKey
 ed25519 = { version = "1.5.2" }
-ed25519-dalek = { version = "1.0.1", features = ["serde"]}
+ed25519-dalek = { version = "1.0.1", features = ["serde"] }
 ed25519-dalek-bip32 = "0.2.0"
 secp256k1 = { version = "0.27.0" }
 
@@ -52,7 +51,6 @@ std = [
     "tendermint/std",
     "rand_core/std",
     "subtle-encoding/std",
-    "ecdsa/std",
     "secp256k1/std",
 ]
 # This feature is required for token transfer (ICS-20)
