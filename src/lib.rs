@@ -15,7 +15,7 @@ pub mod prelude;
 pub mod proof;
 pub mod public_key;
 
-pub(crate) const SOLOMACHINE_CLIENT_TYPE: &str = "07-solomachine";
+pub(crate) const SOLOMACHINE_CLIENT_TYPE: &str = "06-solomachine";
 
 pub fn client_type() -> ClientType {
     ClientType::from(SOLOMACHINE_CLIENT_TYPE.to_string())
