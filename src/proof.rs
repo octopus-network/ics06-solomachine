@@ -1,7 +1,7 @@
 use crate::cosmos::crypto::public_key::{ED25519_TYPE_URL, SECP256K1_TYPE_URL};
 use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
-use crate::signature_and_data::SignatureAndData;
+use crate::proof::types::signature_and_data::SignatureAndData;
 use alloc::format;
 use alloc::vec::Vec;
 use ed25519_dalek::Verifier;

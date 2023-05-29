@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::prelude::*;
-use crate::signature_and_data::SignatureAndData;
+use crate::proof::types::signature_and_data::SignatureAndData;
 use bytes::Buf;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::Height;

@@ -5,9 +5,9 @@ use crate::header::Header as SmHeader;
 use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
 use crate::prelude::*;
 use crate::proof::types::sign_bytes::SignBytes;
+use crate::proof::types::signature_and_data::SignatureAndData;
 use crate::proof::types::timestamped_signature_data::TimestampedSignatureData;
 use crate::proof::verify_signature;
-use crate::signature_and_data::SignatureAndData;
 use core::time::Duration;
 use ibc::core::ics02_client::client_state::UpdateKind;
 use ibc::core::ics02_client::client_state::{ClientState as Ics2ClientState, UpdatedState};
@@ -103,12 +103,7 @@ impl ClientState {
         })?;
 
         let timestamp = timestamped_sig_data.timestamp;
-        if timestamped_sig_data.signature_data.is_empty() {
-            return Err(Error::Other("signature data cannot be empty".into()));
-        }
-
-        let signature_and_data = SignatureAndData::decode_vec(&timestamped_sig_data.signature_data)
-            .map_err(|_| Error::Other("failed to decode SignatureData".into()))?;
+        let signature_and_data = timestamped_sig_data.signature_data;
 
         if self.consensus_state.timestamp > timestamp {
             return Err(Error::Other(format!(
