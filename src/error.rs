@@ -7,8 +7,6 @@ use ibc::core::timestamp::ParseTimestampError;
 
 #[derive(Debug, Display)]
 pub enum Error {
-    /// dummy error
-    Dummy,
     /// decode error: `{0}`
     Decode(prost::DecodeError),
     /// consensus state PublicKey is None
