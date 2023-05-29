@@ -93,10 +93,7 @@ impl TryFrom<RawSmConsensusState> for ConsensusState {
 
 impl From<ConsensusState> for RawSmConsensusState {
     fn from(value: ConsensusState) -> Self {
-        let public_key = value
-            .public_key
-            .to_any()
-            .expect("conver public key to any enver failed");
+        let public_key = value.public_key.to_any();
         let timestamp = value.timestamp.nanoseconds();
         Self {
             public_key: Some(public_key),

@@ -32,7 +32,7 @@ impl TryFrom<RawHeaderData> for HeaderData {
 impl From<HeaderData> for RawHeaderData {
     fn from(value: HeaderData) -> Self {
         Self {
-            new_pub_key: Some(value.new_pub_key.to_any().expect("never failed")),
+            new_pub_key: Some(value.new_pub_key.to_any()),
             new_diversifier: value.new_diversifier,
         }
     }

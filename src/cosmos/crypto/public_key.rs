@@ -7,7 +7,8 @@ use alloc::string::ToString;
 use core::str::FromStr;
 use eyre::Report as ErrorReport;
 use eyre::Result;
-use ibc_proto as proto;
+use ibc_proto::cosmos::crypto::ed25519::PubKey as Ed25519PubKey;
+use ibc_proto::cosmos::crypto::secp256k1::PubKey as Secp256k1PubKey;
 use ibc_proto::google::protobuf::Any;
 use prost::Message;
 use serde::{Deserialize, Serialize};
@@ -57,23 +58,23 @@ impl PublicKey {
     }
 
     /// Convert this [`PublicKey`] to a Protobuf [`Any`] type.
-    pub fn to_any(&self) -> Result<Any> {
+    pub fn to_any(&self) -> Any {
         let value = match self.0 {
-            tendermint::PublicKey::Ed25519(_) => proto::cosmos::crypto::secp256k1::PubKey {
+            tendermint::PublicKey::Ed25519(_) => Ed25519PubKey {
                 key: self.to_bytes(),
             }
             .encode_to_vec(),
-            tendermint::PublicKey::Secp256k1(_) => proto::cosmos::crypto::secp256k1::PubKey {
+            tendermint::PublicKey::Secp256k1(_) => Secp256k1PubKey {
                 key: self.to_bytes(),
             }
             .encode_to_vec(),
-            _ => return Err(Error::Crypto.into()),
+            n => panic!("{}", format!("unknown {:?}", n)),
         };
 
-        Ok(Any {
+        Any {
             type_url: self.type_url().to_owned(),
             value,
-        })
+        }
     }
 
     /// Serialize this [`PublicKey`] as a byte vector.
@@ -107,12 +108,8 @@ impl TryFrom<&Any> for PublicKey {
 
     fn try_from(any: &Any) -> Result<PublicKey> {
         match any.type_url.as_str() {
-            ED25519_TYPE_URL => {
-                proto::cosmos::crypto::ed25519::PubKey::decode(&*any.value)?.try_into()
-            }
-            SECP256K1_TYPE_URL => {
-                proto::cosmos::crypto::secp256k1::PubKey::decode(&*any.value)?.try_into()
-            }
+            ED25519_TYPE_URL => Ed25519PubKey::decode(&*any.value)?.try_into(),
+            SECP256K1_TYPE_URL => Secp256k1PubKey::decode(&*any.value)?.try_into(),
             other => {
                 Err(Error::Crypto.wrap_err(format!("invalid type URL for public key: {}", other)))
             }
@@ -120,20 +117,20 @@ impl TryFrom<&Any> for PublicKey {
     }
 }
 
-impl TryFrom<proto::cosmos::crypto::ed25519::PubKey> for PublicKey {
+impl TryFrom<Ed25519PubKey> for PublicKey {
     type Error = ErrorReport;
 
-    fn try_from(public_key: proto::cosmos::crypto::ed25519::PubKey) -> Result<PublicKey> {
+    fn try_from(public_key: Ed25519PubKey) -> Result<PublicKey> {
         tendermint::public_key::PublicKey::from_raw_ed25519(&public_key.key)
             .map(Into::into)
             .ok_or_else(|| Error::Crypto.into())
     }
 }
 
-impl TryFrom<proto::cosmos::crypto::secp256k1::PubKey> for PublicKey {
+impl TryFrom<Secp256k1PubKey> for PublicKey {
     type Error = ErrorReport;
 
-    fn try_from(public_key: proto::cosmos::crypto::secp256k1::PubKey) -> Result<PublicKey> {
+    fn try_from(public_key: Secp256k1PubKey) -> Result<PublicKey> {
         tendermint::public_key::PublicKey::from_raw_secp256k1(&public_key.key)
             .map(Into::into)
             .ok_or_else(|| Error::Crypto.into())
@@ -144,7 +141,7 @@ impl From<PublicKey> for Any {
     fn from(public_key: PublicKey) -> Any {
         // This is largely a workaround for `tendermint::PublicKey` being
         // marked `non_exhaustive`.
-        public_key.to_any().expect("unsupported algorithm")
+        public_key.to_any()
     }
 }
 

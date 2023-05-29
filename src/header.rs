@@ -81,7 +81,7 @@ impl From<Header> for RawSmHeader {
         Self {
             timestamp: value.timestamp.nanoseconds(),
             signature: value.signature,
-            new_public_key: Some(value.new_public_key.to_any().expect("never failed")),
+            new_public_key: Some(value.new_public_key.to_any()),
             new_diversifier: value.new_diversifier,
         }
     }
