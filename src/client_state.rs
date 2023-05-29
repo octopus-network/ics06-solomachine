@@ -252,12 +252,12 @@ impl Ics2ClientState for ClientState {
         );
         let mut new_client_state = self.clone();
         new_client_state.sequence.increment();
+        let new_height = new_client_state.sequence;
         new_client_state.consensus_state = consensus_state;
 
         ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into_box())?;
 
-        // todo
-        Ok(vec![])
+        Ok(vec![new_height])
     }
 
     /// update_state_on_misbehaviour should perform appropriate state changes on
