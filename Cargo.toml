@@ -28,6 +28,12 @@ scale-info = { version = "2.1.2", default-features = false, features = ["derive"
 ## for borsh encode or decode
 borsh = {version = "0.10.0", default-features = false, optional = true }
 
+# for publicKey
+ed25519 = { version = "1.5.2" }
+ed25519-dalek = { version = "1.0.1", features = ["serde"]}
+ed25519-dalek-bip32 = "0.2.0"
+secp256k1 = { version = "0.27.0" }
+
 [dev-dependencies]
 hex-literal = "0.4"
 
@@ -47,6 +53,7 @@ std = [
     "rand_core/std",
     "subtle-encoding/std",
     "ecdsa/std",
+    "secp256k1/std",
 ]
 # This feature is required for token transfer (ICS-20)
 serde = ["dep:serde", "dep:serde_derive", "serde_json", "erased-serde"]
