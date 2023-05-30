@@ -28,7 +28,7 @@ scale-info = { version = "2.1.2", default-features = false, features = ["derive"
 borsh = {version = "0.10.0", default-features = false, optional = true }
 
 # for publicKey
-# ed25519-dalek = { version = "1.0.1", features = ["serde"] }
+ed25519-dalek = { version = "1.0.1", features = ["serde", "u64_backend"], default-features = false }
 secp256k1 = { version = "0.27.0", features = ["serde", "rand", "recovery", "alloc"], default-features = false }
 
 [dev-dependencies]
@@ -49,10 +49,10 @@ std = [
     "tendermint/std",
     "rand_core/std",
     "subtle-encoding/std",
+    "ed25519-dalek/std",
     "secp256k1/std",
 ]
 # This feature is required for token transfer (ICS-20)
-# serde = ["dep:serde", "dep:serde_derive", "serde_json", "erased-serde"]
 parity-scale-codec = ["dep:parity-scale-codec", "dep:scale-info"]
 borsh = ["dep:borsh"]
 
