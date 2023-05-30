@@ -27,7 +27,7 @@ pub struct PublicKey(tendermint::PublicKey);
 impl PublicKey {
     /// Parse public key from Cosmos JSON format.
     pub fn from_json(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str::<PublicKey>(s).map_err(|e| eyre::eyre!(format!("{}", e)))?)
+        serde_json::from_str::<PublicKey>(s).map_err(|e| eyre::eyre!(format!("{}", e)))
     }
 
     /// Serialize public key as Cosmos JSON.
