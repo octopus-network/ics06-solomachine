@@ -1,6 +1,5 @@
-use crate::cosmos::error::{Error, Result};
+use crate::cosmos::error::Error;
 use crate::prelude::*;
-use eyre::Report as ErrorReport;
 use serde::{de, de::Error as _, ser, Deserialize, Serialize};
 use subtle_encoding::bech32;
 
@@ -20,12 +19,11 @@ impl AccountId {
 
     /// Create an [`AccountId`] with the given human-readable prefix and
     /// public key hash.
-    pub fn new(prefix: &str, bytes: &[u8]) -> Result<Self> {
+    pub fn new(prefix: &str, bytes: &[u8]) -> Result<Self, Error> {
         let id = bech32::encode(prefix, bytes);
 
         if !prefix.chars().all(|c| matches!(c, 'a'..='z' | '0'..='9')) {
-            return Err(Error::AccountId { id }
-                .wrap_err("expected prefix to be lowercase alphanumeric characters only".into()));
+            return Err(Error::AccountId { id });
         }
 
         if matches!(bytes.len(), 1..=Self::MAX_LENGTH) {
@@ -34,11 +32,7 @@ impl AccountId {
                 hrp_length: prefix.len(),
             })
         } else {
-            Err(Error::AccountId { id }.wrap_err(format!(
-                "account ID should be at most {} bytes long, but was {} bytes long",
-                Self::MAX_LENGTH,
-                bytes.len()
-            )))
+            Err(Error::AccountId { id })
         }
     }
 
@@ -74,11 +68,12 @@ impl fmt::Display for AccountId {
 }
 
 impl FromStr for AccountId {
-    type Err = ErrorReport;
+    type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self> {
-        let (hrp, bytes) =
-            bech32::decode(s).map_err(|_| eyre::eyre!(format!("invalid bech32: '{}'", s)))?;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (hrp, bytes) = bech32::decode(s).map_err(|e| Error::Other {
+            description: format!("{}", e),
+        })?;
         Self::new(&hrp, &bytes)
     }
 }
@@ -90,27 +85,26 @@ impl From<AccountId> for String {
 }
 
 impl TryFrom<AccountId> for tendermint::account::Id {
-    type Error = ErrorReport;
+    type Error = Error;
 
-    fn try_from(id: AccountId) -> Result<tendermint::account::Id> {
+    fn try_from(id: AccountId) -> Result<tendermint::account::Id, Self::Error> {
         tendermint::account::Id::try_from(&id)
     }
 }
 
 // TODO(tarcieri): non-fixed-width account ID type
 impl TryFrom<&AccountId> for tendermint::account::Id {
-    type Error = ErrorReport;
+    type Error = Error;
 
-    fn try_from(id: &AccountId) -> Result<tendermint::account::Id> {
+    fn try_from(id: &AccountId) -> Result<tendermint::account::Id, Self::Error> {
         let bytes = id.to_bytes();
-        let len = bytes.len();
+        let _len = bytes.len();
 
         match bytes.try_into() {
             Ok(bytes) => Ok(tendermint::account::Id::new(bytes)),
             _ => Err(Error::AccountId {
                 id: id.bech32.clone(),
-            }
-            .wrap_err(format!("invalid length for account ID: {}", len))),
+            }),
         }
     }
 }

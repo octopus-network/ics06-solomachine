@@ -29,8 +29,8 @@ pub enum Error {
     TimeStampIsEmpty,
     /// diversifier cannot contain only spaces
     DriversifierContainOnlySpaces,
-    /// public key parsed failed: `{0}`
-    PublicKeyParseFailed(eyre::ErrReport),
+    /// public key parsed failed
+    PublicKeyParseFailed(crate::cosmos::error::Error),
     /// public key is empty
     PublicKeyIsEmpty,
     /// consensus state is empty

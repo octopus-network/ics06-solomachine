@@ -1,8 +1,4 @@
 //! Error types
-
-pub use eyre::{Report, Result};
-
-use alloc::format;
 use alloc::string::String;
 use displaydoc::Display;
 use tendermint::Hash;
@@ -60,17 +56,7 @@ pub enum Error {
         /// Transaction hash that wasn't found.
         hash: Hash,
     },
-}
 
-impl Error {
-    /// wrap error msg
-    pub fn wrap_err(self, err_msg: String) -> eyre::ErrReport {
-        eyre::eyre!(format!("{self}, {err_msg}"))
-    }
-}
-
-impl From<Error> for eyre::ErrReport {
-    fn from(e: Error) -> Self {
-        eyre::eyre!(e)
-    }
+    /// other error: {description},
+    Other { description: String },
 }
