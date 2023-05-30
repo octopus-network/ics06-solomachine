@@ -8,7 +8,6 @@ use crate::proof::types::sign_bytes::SignBytes;
 use crate::proof::types::signature_and_data::SignatureAndData;
 use crate::proof::types::timestamped_signature_data::TimestampedSignatureData;
 use crate::proof::verify_signature;
-use core::time::Duration;
 use ibc::core::ics02_client::client_state::UpdateKind;
 use ibc::core::ics02_client::client_state::{ClientState as Ics2ClientState, UpdatedState};
 use ibc::core::ics02_client::client_type::ClientType;
@@ -33,12 +32,11 @@ use prost::Message;
 pub mod misbehaviour;
 pub mod update_client;
 
-pub const SOLOMACHINE_CLIENT_STATE_TYPE_URL: &str = "/ibc.lightclients.solomachine.v1.ClientState";
+pub const SOLOMACHINE_CLIENT_STATE_TYPE_URL: &str = "/ibc.lightclients.solomachine.v3.ClientState";
 
 /// ClientState defines a solo machine client that tracks the current consensus
 /// state and if the client is frozen.
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, PartialEq, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, PartialEq, Debug)]
 pub struct ClientState {
     /// latest sequence of the client state
     pub sequence: Height,
@@ -122,12 +120,13 @@ impl Ics2ClientState for ClientState {
     /// Return the chain identifier which this client is serving (i.e., the client is verifying
     /// consensus states from this chain).
     fn chain_id(&self) -> ChainId {
+        // todo(davirian)
         ChainId::default()
     }
 
     /// ClientType is Solo Machine.
     fn client_type(&self) -> ClientType {
-        super::client_type()
+        crate::client_type()
     }
 
     /// latest_height returns the latest sequence number.

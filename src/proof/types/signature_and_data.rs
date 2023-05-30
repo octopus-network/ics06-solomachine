@@ -35,7 +35,7 @@ impl TryFrom<RawSignatureAndData> for SignatureAndData {
         let data = raw.data;
         let timestamp =
             Timestamp::from_nanoseconds(raw.timestamp).map_err(Error::ParseTimeError)?;
-        let path = MerklePath::decode(&*raw.path.as_ref())
+        let path = MerklePath::decode(raw.path.as_ref())
             .map_err(|e| Error::Other(format!("decode MerklePath Failed({})", e)))?;
         Ok(Self {
             signature,

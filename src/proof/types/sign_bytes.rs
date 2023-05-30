@@ -26,7 +26,7 @@ impl TryFrom<RawSignBytes> for SignBytes {
     type Error = Error;
 
     fn try_from(raw: RawSignBytes) -> Result<Self, Self::Error> {
-        let path = MerklePath::decode(&*raw.path.as_ref())
+        let path = MerklePath::decode(raw.path.as_ref())
             .map_err(|e| Error::Other(format!("decode MerklePath Failed({})", e)))?;
         Ok(Self {
             sequence: raw.sequence,

@@ -2,7 +2,6 @@ use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
 use crate::prelude::*;
 use bytes::Buf;
-use core::fmt::{Display, Error as FmtError, Formatter};
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;
 use ibc::Height;
@@ -11,11 +10,10 @@ use ibc_proto::ibc::lightclients::solomachine::v3::Header as RawSmHeader;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
-pub const SOLOMACHINE_HEADER_TYPE_URL: &str = "/ibc.lightclients.solomachine.v1.Header";
+pub const SOLOMACHINE_HEADER_TYPE_URL: &str = "/ibc.lightclients.solomachine.v3.Header";
 
 /// Header defines a solo machine consensus header
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct Header {
     pub timestamp: Timestamp,
     pub signature: Vec<u8>,
