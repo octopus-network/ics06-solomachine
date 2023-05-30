@@ -8,7 +8,6 @@ use crate::proof::types::sign_bytes::SignBytes;
 use crate::proof::types::signature_and_data::SignatureAndData;
 use crate::proof::types::timestamped_signature_data::TimestampedSignatureData;
 use crate::proof::verify_signature;
-use core::time::Duration;
 use ibc::core::ics02_client::client_state::UpdateKind;
 use ibc::core::ics02_client::client_state::{ClientState as Ics2ClientState, UpdatedState};
 use ibc::core::ics02_client::client_type::ClientType;

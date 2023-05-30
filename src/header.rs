@@ -2,7 +2,6 @@ use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
 use crate::prelude::*;
 use bytes::Buf;
-use core::fmt::{Display, Error as FmtError, Formatter};
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;
 use ibc::Height;

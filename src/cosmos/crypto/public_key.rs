@@ -4,7 +4,6 @@ use crate::cosmos::base::account_id::AccountId;
 use crate::cosmos::error::Error;
 use crate::prelude::*;
 use alloc::string::ToString;
-use core::str::FromStr;
 use eyre::Report as ErrorReport;
 use eyre::Result;
 use ibc_proto::cosmos::crypto::ed25519::PubKey as Ed25519PubKey;
