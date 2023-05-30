@@ -24,12 +24,12 @@ serde_json = { version = "1", default-features = false }
 erased-serde = { version = "0.3", default-features = false, features = ["alloc"] }
 k256 = { version = "0.13", features = ["ecdsa", "sha256"], default-features = false }
 tendermint = { version = "0.31", features = ["secp256k1", "rust-crypto"], default-features = false }
-rand_core = { version = "0.6", default-features = false }
 subtle-encoding = { version = "0.5", default-features = false }
 
 # for publicKey
-ed25519-dalek = { version = "1.0.1", features = ["serde", "u64_backend"], default-features = false }
-# secp256k1 = { version = "0.27.0", features = ["alloc"], default-features = false }
+# ed25519-dalek = { version = "1.0.1", features = ["serde", "u64_backend"], default-features = false }
+# libsecp256k1 = { version = "0.7", features = ["static-context"],default-features = false }
+# secp256k1 = { version = "0.24.0", features = ["recovery", "alloc"], default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.4"
@@ -47,10 +47,10 @@ std = [
     "erased-serde/std",
     "k256/std",
     "tendermint/std",
-    "rand_core/std",
     "subtle-encoding/std",
-    "ed25519-dalek/std",
+    # "ed25519-dalek/std",
     # "secp256k1/std",
+    # "libsecp256k1/std",
 ]
 
 [patch.crates-io]
