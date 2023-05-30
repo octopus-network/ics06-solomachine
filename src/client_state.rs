@@ -121,12 +121,13 @@ impl Ics2ClientState for ClientState {
     /// Return the chain identifier which this client is serving (i.e., the client is verifying
     /// consensus states from this chain).
     fn chain_id(&self) -> ChainId {
+        // todo(davirian)
         ChainId::default()
     }
 
     /// ClientType is Solo Machine.
     fn client_type(&self) -> ClientType {
-        super::client_type()
+        crate::client_type()
     }
 
     /// latest_height returns the latest sequence number.

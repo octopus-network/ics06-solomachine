@@ -6,19 +6,19 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ibc = { version = "0.40.0", default-feature = false }
-ibc-proto = { version = "0.29.0", default-feature = false }
+ibc = { version = "0.40.0", default-features = false }
+ibc-proto = { version = "0.29.0",default-features = false }
 prost = { version = "0.11", default-features = false }
 displaydoc = { version = "0.2", default-features = false }
 bytes = { version = "1.2.1", default-features = false }
 eyre = { version = "0.6", default-features = false }
 serde_derive = { version = "1.0.104", default-features = false, optional = true }
-serde = { version = "1.0", default-features = false, optional = true }
-serde_json = { version = "1", default-features = false, optional = true }
-erased-serde = { version = "0.3", default-features = false, features = ["alloc"], optional = true }
+serde = { version = "1.0", default-features = false }
+serde_json = { version = "1", default-features = false}
+erased-serde = { version = "0.3", default-features = false, features = ["alloc"] }
 k256 = { version = "0.13", features = ["ecdsa", "sha256"], default-features = false }
 tendermint = { version = "0.32", features = ["secp256k1", "rust-crypto"], default-features = false }
-rand_core = { version = "0.6", default-feature = false }
+rand_core = { version = "0.6", default-features = false }
 subtle-encoding = { version = "0.5", default-features = false }
 
 ## for codec encode or decode
@@ -28,8 +28,8 @@ scale-info = { version = "2.1.2", default-features = false, features = ["derive"
 borsh = {version = "0.10.0", default-features = false, optional = true }
 
 # for publicKey
-ed25519-dalek = { version = "1.0.1", features = ["serde"] }
-secp256k1 = { version = "0.27.0" }
+# ed25519-dalek = { version = "1.0.1", features = ["serde"] }
+secp256k1 = { version = "0.27.0", features = ["serde", "rand", "recovery", "alloc"], default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.4"
@@ -52,7 +52,7 @@ std = [
     "secp256k1/std",
 ]
 # This feature is required for token transfer (ICS-20)
-serde = ["dep:serde", "dep:serde_derive", "serde_json", "erased-serde"]
+# serde = ["dep:serde", "dep:serde_derive", "serde_json", "erased-serde"]
 parity-scale-codec = ["dep:parity-scale-codec", "dep:scale-info"]
 borsh = ["dep:borsh"]
 

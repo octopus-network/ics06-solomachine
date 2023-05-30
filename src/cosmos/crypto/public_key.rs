@@ -27,7 +27,7 @@ pub struct PublicKey(tendermint::PublicKey);
 impl PublicKey {
     /// Parse public key from Cosmos JSON format.
     pub fn from_json(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str::<PublicKey>(s)?)
+        Ok(serde_json::from_str::<PublicKey>(s).map_err(|e| eyre::eyre!(format!("{}", e)))?)
     }
 
     /// Serialize public key as Cosmos JSON.
@@ -107,8 +107,12 @@ impl TryFrom<&Any> for PublicKey {
 
     fn try_from(any: &Any) -> Result<PublicKey> {
         match any.type_url.as_str() {
-            ED25519_TYPE_URL => Ed25519PubKey::decode(&*any.value)?.try_into(),
-            SECP256K1_TYPE_URL => Secp256k1PubKey::decode(&*any.value)?.try_into(),
+            ED25519_TYPE_URL => Ed25519PubKey::decode(&*any.value)
+                .map_err(|e| eyre::eyre!(format!("{}", e)))?
+                .try_into(),
+            SECP256K1_TYPE_URL => Secp256k1PubKey::decode(&*any.value)
+                .map_err(|e| eyre::eyre!(format!("{}", e)))?
+                .try_into(),
             other => {
                 Err(Error::Crypto.wrap_err(format!("invalid type URL for public key: {}", other)))
             }
@@ -209,7 +213,7 @@ impl TryFrom<&PublicKeyJson> for PublicKey {
     type Error = ErrorReport;
 
     fn try_from(json: &PublicKeyJson) -> Result<PublicKey> {
-        let pk_bytes = base64::decode(&json.key)?;
+        let pk_bytes = base64::decode(&json.key).map_err(|e| eyre::eyre!(format!("{}", e)))?;
 
         let tm_key = match json.type_url.as_str() {
             ED25519_TYPE_URL => tendermint::PublicKey::from_raw_ed25519(&pk_bytes),

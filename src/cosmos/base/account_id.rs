@@ -1,7 +1,6 @@
 use crate::cosmos::error::{Error, Result};
 use crate::prelude::*;
 use eyre::Report as ErrorReport;
-use eyre::WrapErr;
 use serde::{de, de::Error as _, ser, Deserialize, Serialize};
 use subtle_encoding::bech32;
 
@@ -78,7 +77,8 @@ impl FromStr for AccountId {
     type Err = ErrorReport;
 
     fn from_str(s: &str) -> Result<Self> {
-        let (hrp, bytes) = bech32::decode(s).wrap_err(format!("invalid bech32: '{}'", s))?;
+        let (hrp, bytes) =
+            bech32::decode(s).map_err(|_| eyre::eyre!(format!("invalid bech32: '{}'", s)))?;
         Self::new(&hrp, &bytes)
     }
 }

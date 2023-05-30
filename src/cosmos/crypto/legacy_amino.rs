@@ -59,7 +59,8 @@ impl TryFrom<&Any> for LegacyAminoMultisig {
             )));
         }
 
-        let proto = RawLegacyAminoPubKey::decode(&*any.value)?;
+        let proto =
+            RawLegacyAminoPubKey::decode(&*any.value).map_err(|e| eyre::eyre!(format!("{}", e)))?;
         let public_keys = proto
             .public_keys
             .into_iter()

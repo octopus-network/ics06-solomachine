@@ -3,7 +3,7 @@ use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
 use crate::prelude::*;
 use crate::proof::types::signature_and_data::SignatureAndData;
-use ed25519_dalek::{PublicKey as Ed25519PublicKey, Signature, Verifier};
+// use ed25519_dalek::{PublicKey as Ed25519PublicKey, Signature, Verifier};
 use secp256k1::{ecdsa, Message, PublicKey as Secp256k1PubliKey, Secp256k1};
 
 pub mod types;
@@ -21,14 +21,15 @@ pub fn verify_signature(
 ) -> Result<(), Error> {
     match publik_key.type_url() {
         ED25519_TYPE_URL => {
-            let public_key: Ed25519PublicKey = Ed25519PublicKey::from_bytes(&publik_key.to_bytes())
-                .map_err(|e| Error::Other(format!("decode Ed25519PublicKey Error({})", e)))?;
+            // let public_key: Ed25519PublicKey = Ed25519PublicKey::from_bytes(&publik_key.to_bytes())
+            //     .map_err(|e| Error::Other(format!("decode Ed25519PublicKey Error({})", e)))?;
 
-            let signature: Signature = Signature::from_bytes(&signature_and_data.signature)
-                .map_err(|e| Error::Other(format!("decode Sinature Failed({})", e)))?;
-            public_key
-                .verify(&sign_bytes, &signature)
-                .map_err(|e| Error::Other(format!("ed25519 verify failed: ({})", e)))
+            // let signature: Signature = Signature::from_bytes(&signature_and_data.signature)
+            //     .map_err(|e| Error::Other(format!("decode Sinature Failed({})", e)))?;
+            // public_key
+            //     .verify(&sign_bytes, &signature)
+            //     .map_err(|e| Error::Other(format!("ed25519 verify failed: ({})", e)))
+            todo!()
         }
         SECP256K1_TYPE_URL => {
             // ref: https://docs.rs/secp256k1/latest/secp256k1/

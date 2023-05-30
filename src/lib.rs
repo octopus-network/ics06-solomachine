@@ -13,7 +13,6 @@ pub mod header;
 pub mod misbehaviour;
 pub mod prelude;
 pub mod proof;
-pub mod public_key;
 
 pub(crate) const SOLOMACHINE_CLIENT_TYPE: &str = "06-solomachine";
 
