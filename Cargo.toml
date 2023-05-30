@@ -2,6 +2,12 @@
 name = "ics06-solomachine"
 version = "0.1.0"
 edition = "2021"
+keywords     = ["solomachine", "ics06", "cosmos", "ibc"]
+repository   = "https://github.com/octopus-network/ics06-solomachine.git"
+authors      = ["Octopus Network"]
+description  = """
+    Implementation of the ICS06 solomachine client according by ibc-go.
+"""
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

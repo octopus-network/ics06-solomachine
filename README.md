@@ -1,4 +1,4 @@
-# Ics06 Solo Machine Client by rust
+# ICS06 Solo Machine Client by rust
 
 Current this implement just impl Single Signatue, currently only supports single sign-on.
 
