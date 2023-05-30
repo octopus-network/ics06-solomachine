@@ -35,7 +35,7 @@ borsh = {version = "0.10.0", default-features = false, optional = true }
 
 # for publicKey
 ed25519-dalek = { version = "1.0.1", features = ["serde", "u64_backend"], default-features = false }
-secp256k1 = { version = "0.27.0", features = ["serde", "rand", "recovery", "alloc"], default-features = false }
+secp256k1 = { version = "0.27.0", features = ["serde", "alloc"], default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.4"
