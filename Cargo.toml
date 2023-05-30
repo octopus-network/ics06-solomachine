@@ -25,7 +25,7 @@ tendermint = { version = "0.31", features = ["secp256k1", "rust-crypto"], defaul
 subtle-encoding = { version = "0.5", default-features = false }
 
 # for publicKey
-ed25519-dalek = { version = "1.0.1", features = ["serde", "u64_backend"], default-features = false }
+# ed25519-dalek = { version = "1.0.1", features = ["serde", "u64_backend"], default-features = false }
 # secp256k1 = { version = "0.24.0", features = ["recovery", "alloc"], default-features = false }
 
 [dev-dependencies]
@@ -44,10 +44,9 @@ std = [
     "k256/std",
     "tendermint/std",
     "subtle-encoding/std",
-    "ed25519-dalek/std",
+    # "ed25519-dalek/std",
     # "secp256k1/std",
 ]
 
 [patch.crates-io]
-ibc = { git = "https://github.com/DaviRain-Su/ibc-rs.git", branch = "codec-v0.41.0" }
 ibc-proto = { git = "https://github.com/DaviRain-Su/ibc-proto-rs.git", branch = "full-cosmos-type-v0.30.0" }
