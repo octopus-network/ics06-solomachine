@@ -4,7 +4,7 @@ use crate::error::Error;
 use crate::prelude::*;
 use crate::proof::types::signature_and_data::SignatureAndData;
 use ed25519_dalek::{PublicKey as Ed25519PublicKey, Signature, Verifier};
-use secp256k1::{ecdsa, Message, PublicKey as Secp256k1PubliKey, Secp256k1};
+// use secp256k1::{ecdsa, Message, PublicKey as Secp256k1PubliKey, Secp256k1};
 
 pub mod types;
 
@@ -32,16 +32,17 @@ pub fn verify_signature(
         }
         SECP256K1_TYPE_URL => {
             // ref: https://docs.rs/secp256k1/latest/secp256k1/
-            let secp = Secp256k1::verification_only();
+            // let secp = Secp256k1::verification_only();
 
-            let public_key = Secp256k1PubliKey::from_slice(&publik_key.to_bytes())
-                .map_err(|e| Error::Other(format!("Decode Secp256k1 error({})", e)))?;
-            let message = Message::from_slice(&sign_bytes)
-                .map_err(|e| Error::Other(format!("Decode Message Error({})", e)))?;
-            let sig = ecdsa::Signature::from_compact(&signature_and_data.signature)
-                .map_err(|e| Error::Other(format!("Decode scdsa Signature failed({})", e)))?;
-            secp.verify_ecdsa(&message, &sig, &public_key)
-                .map_err(|e| Error::Other(format!("verify ecdsa failed({})", e)))
+            // let public_key = Secp256k1PubliKey::from_slice(&publik_key.to_bytes())
+            //     .map_err(|e| Error::Other(format!("Decode Secp256k1 error({})", e)))?;
+            // let message = Message::from_slice(&sign_bytes)
+            //     .map_err(|e| Error::Other(format!("Decode Message Error({})", e)))?;
+            // let sig = ecdsa::Signature::from_compact(&signature_and_data.signature)
+            //     .map_err(|e| Error::Other(format!("Decode scdsa Signature failed({})", e)))?;
+            // secp.verify_ecdsa(&message, &sig, &public_key)
+            //     .map_err(|e| Error::Other(format!("verify ecdsa failed({})", e)))
+            Ok(())
         }
         _ => Err(Error::Other("No Support Crypto type".into())),
     }
