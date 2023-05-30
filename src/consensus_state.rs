@@ -10,7 +10,7 @@ use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
 pub const SOLOMACHINE_CONSENSUS_STATE_TYPE_URL: &str =
-    "/ibc.lightclients.solomachine.v1.ConsensusState";
+    "/ibc.lightclients.solomachine.v3.ConsensusState";
 
 /// ConsensusState defines a solo machine consensus state. The sequence of a
 /// consensus state is contained in the "height" key used in storing the
