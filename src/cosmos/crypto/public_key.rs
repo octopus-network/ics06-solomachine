@@ -1,6 +1,5 @@
 //! Public keys
 
-use crate::cosmos::base::account_id::AccountId;
 use crate::cosmos::error::Error;
 use crate::prelude::*;
 use alloc::string::ToString;
@@ -33,17 +32,6 @@ impl PublicKey {
     /// Serialize public key as Cosmos JSON.
     pub fn to_json(&self) -> String {
         serde_json::to_string(&self).expect("JSON serialization error")
-    }
-
-    /// Get the [`AccountId`] for this [`PublicKey`] (if applicable).
-    pub fn account_id(&self, prefix: &str) -> Result<AccountId, Error> {
-        match &self.0 {
-            tendermint::PublicKey::Secp256k1(encoded_point) => {
-                let id = tendermint::account::Id::from(*encoded_point);
-                AccountId::new(prefix, id.as_bytes())
-            }
-            _ => Err(Error::Crypto),
-        }
     }
 
     /// Get the type URL for this [`PublicKey`].
