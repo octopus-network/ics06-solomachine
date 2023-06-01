@@ -42,7 +42,7 @@ impl Display for Header {
 
 impl ibc::core::ics02_client::header::Header for Header {
     fn height(&self) -> Height {
-        // todo(davirian)
+        // todo(davirian), this can improve
         Height::new(0, 9999).expect("never failed")
     }
 
