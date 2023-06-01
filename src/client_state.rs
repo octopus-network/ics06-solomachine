@@ -17,6 +17,7 @@ use ibc::core::ics23_commitment::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
 use ibc::core::ics23_commitment::merkle::apply_prefix;
+use ibc::core::ics23_commitment::merkle::MerkleProof;
 use ibc::core::ics24_host::identifier::ClientId;
 use ibc::core::ics24_host::path::ClientStatePath;
 use ibc::core::ics24_host::path::Path;
@@ -24,7 +25,6 @@ use ibc::core::timestamp::Timestamp;
 use ibc::core::{ExecutionContext, ValidationContext};
 use ibc::Height;
 use ibc_proto::google::protobuf::Any;
-use ibc_proto::ibc::core::commitment::v1::MerkleProof as RawMerkleProof;
 use ibc_proto::ibc::lightclients::solomachine::v3::ClientState as RawSmClientState;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
@@ -274,8 +274,8 @@ impl Ics2ClientState for ClientState {
         &self,
         _upgraded_client_state: Any,
         _upgraded_consensus_state: Any,
-        _proof_upgrade_client: RawMerkleProof,
-        _proof_upgrade_consensus_state: RawMerkleProof,
+        _proof_upgrade_client: MerkleProof,
+        _proof_upgrade_consensus_state: MerkleProof,
         _root: &CommitmentRoot,
     ) -> Result<(), ClientError> {
         Ok(())
