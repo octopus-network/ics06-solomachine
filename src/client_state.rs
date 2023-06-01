@@ -17,14 +17,14 @@ use ibc::core::ics23_commitment::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
 use ibc::core::ics23_commitment::merkle::apply_prefix;
-use ibc::core::ics24_host::identifier::{ChainId, ClientId};
+use ibc::core::ics23_commitment::merkle::MerkleProof;
+use ibc::core::ics24_host::identifier::ClientId;
 use ibc::core::ics24_host::path::ClientStatePath;
 use ibc::core::ics24_host::path::Path;
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ExecutionContext, ValidationContext};
 use ibc::Height;
 use ibc_proto::google::protobuf::Any;
-use ibc_proto::ibc::core::commitment::v1::MerkleProof as RawMerkleProof;
 use ibc_proto::ibc::lightclients::solomachine::v3::ClientState as RawSmClientState;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
@@ -117,13 +117,6 @@ impl ClientState {
 }
 
 impl Ics2ClientState for ClientState {
-    /// Return the chain identifier which this client is serving (i.e., the client is verifying
-    /// consensus states from this chain).
-    fn chain_id(&self) -> ChainId {
-        // todo(davirian)
-        ChainId::default()
-    }
-
     /// ClientType is Solo Machine.
     fn client_type(&self) -> ClientType {
         crate::client_type()
@@ -160,14 +153,6 @@ impl Ics2ClientState for ClientState {
     fn expired(&self, _elapsed: Duration) -> bool {
         // todo(davirian)
         false
-    }
-
-    /// Helper function to verify the upgrade client procedure.
-    /// Resets all fields except the blockchain-specific ones,
-    /// and updates the given fields.
-    // ref: https://github.com/cosmos/ibc-go/blob/3765dfc3b89b16c81abcc3e0b1ad5823d7f7eaa0/modules/light-clients/06-solomachine/client_state.go#L76
-    fn zero_custom_fields(&mut self) {
-        panic!("ZeroCustomFields is not implemented as the solo machine implementation does not support upgrades.")
     }
 
     fn initialise(&self, consensus_state: Any) -> Result<Box<dyn ConsensusState>, ClientError> {
@@ -289,8 +274,8 @@ impl Ics2ClientState for ClientState {
         &self,
         _upgraded_client_state: Any,
         _upgraded_consensus_state: Any,
-        _proof_upgrade_client: RawMerkleProof,
-        _proof_upgrade_consensus_state: RawMerkleProof,
+        _proof_upgrade_client: MerkleProof,
+        _proof_upgrade_consensus_state: MerkleProof,
         _root: &CommitmentRoot,
     ) -> Result<(), ClientError> {
         Ok(())

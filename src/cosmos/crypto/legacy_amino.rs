@@ -3,8 +3,6 @@
 use super::PublicKey;
 use crate::cosmos::error::Error;
 use crate::prelude::*;
-use eyre::Report as ErrorReport;
-use eyre::Result;
 use ibc_proto::cosmos::crypto::multisig::LegacyAminoPubKey as RawLegacyAminoPubKey;
 use ibc_proto::google::protobuf::Any;
 use prost::Message;
@@ -41,26 +39,24 @@ impl From<LegacyAminoMultisig> for Any {
 }
 
 impl TryFrom<Any> for LegacyAminoMultisig {
-    type Error = ErrorReport;
+    type Error = Error;
 
-    fn try_from(any: Any) -> Result<LegacyAminoMultisig> {
+    fn try_from(any: Any) -> Result<LegacyAminoMultisig, Self::Error> {
         LegacyAminoMultisig::try_from(&any)
     }
 }
 
 impl TryFrom<&Any> for LegacyAminoMultisig {
-    type Error = ErrorReport;
+    type Error = Error;
 
-    fn try_from(any: &Any) -> Result<Self> {
+    fn try_from(any: &Any) -> Result<Self, Self::Error> {
         if any.type_url != LEGACY_AMINO_MULTISIG_TYPE_URL {
-            return Err(Error::Crypto.wrap_err(format!(
-                "invalid type URL for LegacyAminoPubKey: {}",
-                &any.type_url
-            )));
+            return Err(Error::Crypto);
         }
 
-        let proto =
-            RawLegacyAminoPubKey::decode(&*any.value).map_err(|e| eyre::eyre!(format!("{}", e)))?;
+        let proto = RawLegacyAminoPubKey::decode(&*any.value).map_err(|e| Error::Other {
+            description: format!("{}", e),
+        })?;
         let public_keys = proto
             .public_keys
             .into_iter()
