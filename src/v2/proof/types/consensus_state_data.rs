@@ -5,7 +5,7 @@ use ibc_proto::ibc::lightclients::solomachine::v2::ConsensusStateData as RawCons
 use ibc_proto::protobuf::Protobuf;
 
 pub const SOLOMACHINE_CONSENSUS_STATE_DATA_TYPE_URL: &str =
-    "/ibc.lightclients.solomachine.v1.ConsensusStateData";
+    "/ibc.lightclients.solomachine.v2.ConsensusStateData";
 
 /// ConsensusStateData returns the SignBytes data for consensus state
 /// verification.

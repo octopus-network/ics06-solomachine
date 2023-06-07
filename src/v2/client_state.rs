@@ -37,7 +37,7 @@ use prost::Message;
 pub mod misbehaviour;
 pub mod update_client;
 
-pub const SOLOMACHINE_CLIENT_STATE_TYPE_URL: &str = "/ibc.lightclients.solomachine.v3.ClientState";
+pub const SOLOMACHINE_CLIENT_STATE_TYPE_URL: &str = "/ibc.lightclients.solomachine.v2.ClientState";
 
 /// ClientState defines a solo machine client that tracks the current consensus
 /// state and if the client is frozen.

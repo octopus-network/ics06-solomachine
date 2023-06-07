@@ -3,6 +3,9 @@ use crate::v2::error::Error;
 use ibc_proto::ibc::lightclients::solomachine::v2::PacketAcknowledgementData as RawPacketAcknowledgementData;
 use ibc_proto::protobuf::Protobuf;
 
+pub const SOLOMACHINE_PACKET_ACKNOWLEDGEMENT_DATA_TYPE_URL: &str =
+    "/ibc.lightclients.solomachine.v2.PacketAcknowledgementData";
+
 /// PacketAcknowledgementData returns the SignBytes data for acknowledgement
 /// verification.
 #[derive(Clone, PartialEq)]

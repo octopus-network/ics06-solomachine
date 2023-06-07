@@ -3,6 +3,9 @@ use crate::v2::error::Error;
 use ibc_proto::ibc::lightclients::solomachine::v2::PacketReceiptAbsenceData as RawPacketReceiptAbsenceData;
 use ibc_proto::protobuf::Protobuf;
 
+pub const SOLOMACHINE_PACKET_RECEIPT_ABSENCE_DATA_TYPE_URL: &str =
+    "/ibc.lightclients.solomachine.v2.PacketReceiptAbsenceData";
+
 /// PacketReceiptAbsenceData returns the SignBytes data for
 /// packet receipt absence verification.
 #[derive(Clone, PartialEq)]

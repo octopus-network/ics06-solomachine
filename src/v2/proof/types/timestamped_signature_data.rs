@@ -5,6 +5,9 @@ use ibc::core::timestamp::Timestamp;
 use ibc_proto::ibc::lightclients::solomachine::v2::TimestampedSignatureData as RawTimestampedSignatureData;
 use ibc_proto::protobuf::Protobuf;
 
+pub const SOLOMACHINE_TIMESTAMPED_SIGNATURE_DATA_TYPE_URL: &str =
+    "/ibc.lightclients.solomachine.v2.TimestampedSignatureData";
+
 /// TimestampedSignatureData contains the signature data and the timestamp of the
 /// signature.
 #[derive(Clone, PartialEq)]

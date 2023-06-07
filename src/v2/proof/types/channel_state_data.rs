@@ -6,7 +6,7 @@ use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
 pub const SOLOMACHINE_CHANNEL_STATE_DATA_TYPE_URL: &str =
-    "/ibc.lightclients.solomachine.v1.ChannelStateData";
+    "/ibc.lightclients.solomachine.v2.ChannelStateData";
 
 /// ChannelStateData returns the SignBytes data for channel state
 /// verification.

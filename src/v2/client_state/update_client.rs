@@ -37,11 +37,7 @@ impl ClientState {
             sequence: self.sequence.revision_height(),
             timestamp: header.timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
-            // todo(davirain)
-            // ref: https://github.com/cosmos/ibc-go/blob/3765dfc3b89b16c81abcc3e0b1ad5823d7f7eaa0/modules/light-clients/06-solomachine/header.go#L13
-            // SentinelHeaderPath defines a placeholder path value used for headers in solomachine client updates
-            // const SentinelHeaderPath = "solomachine:header"
-            // ref: https://github.com/cosmos/ibc-go/blob/3765dfc3b89b16c81abcc3e0b1ad5823d7f7eaa0/modules/light-clients/06-solomachine/update.go#L48
+            // todo(davirain) need to deter DataType
             data_type: crate::v2::proof::types::DataType::Header,
             data: data_bz,
         };

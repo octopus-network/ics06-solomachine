@@ -5,7 +5,7 @@ use ibc_proto::ibc::lightclients::solomachine::v2::ClientStateData as RawClientS
 use ibc_proto::protobuf::Protobuf;
 
 pub const SOLOMACHINE_CLIENT_STATE_DATA_TYPE_URL: &str =
-    "/ibc.lightclients.solomachine.v1.ClientStateData";
+    "/ibc.lightclients.solomachine.v2.ClientStateData";
 
 /// ClientStateData returns the SignBytes data for client state verification.
 #[derive(Clone, PartialEq)]

@@ -10,7 +10,7 @@ use ibc_proto::ibc::lightclients::solomachine::v2::Misbehaviour as RawSmMisbehav
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
-pub const SOLOMACHINE_MISBEHAVIOUR_TYPE_URL: &str = "/ibc.lightclients.solomachine.v3.Misbehaviour";
+pub const SOLOMACHINE_MISBEHAVIOUR_TYPE_URL: &str = "/ibc.lightclients.solomachine.v2.Misbehaviour";
 
 /// Misbehaviour defines misbehaviour for a solo machine which consists
 /// of a sequence and two signatures over different messages at that sequence.

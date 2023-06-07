@@ -10,7 +10,7 @@ use ibc_proto::ibc::lightclients::solomachine::v2::Header as RawSmHeader;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
-pub const SOLOMACHINE_HEADER_TYPE_URL: &str = "/ibc.lightclients.solomachine.v3.Header";
+pub const SOLOMACHINE_HEADER_TYPE_URL: &str = "/ibc.lightclients.solomachine.v2.Header";
 
 /// Header defines a solo machine consensus header
 #[derive(serde::Serialize, serde::Deserialize, Clone, PartialEq)]

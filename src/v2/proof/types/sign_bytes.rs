@@ -4,6 +4,8 @@ use crate::v2::proof::types::DataType;
 use ibc_proto::ibc::lightclients::solomachine::v2::SignBytes as RawSignBytes;
 use ibc_proto::protobuf::Protobuf;
 
+pub const SOLOMACHINE_SIGN_BYTES_TYPE_URL: &str = "/ibc.lightclients.solomachine.v2.SignBytes";
+
 /// SignBytes defines the signed bytes used for signature verification.
 #[derive(Clone, PartialEq)]
 pub struct SignBytes {

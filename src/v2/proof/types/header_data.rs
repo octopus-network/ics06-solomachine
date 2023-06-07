@@ -4,6 +4,8 @@ use crate::v2::error::Error;
 use ibc_proto::ibc::lightclients::solomachine::v2::HeaderData as RawHeaderData;
 use ibc_proto::protobuf::Protobuf;
 
+pub const SOLOMACHINE_HEADER_DATA_TYPE_URL: &str = "/ibc.lightclients.solomachine.v2.HeaderData";
+
 /// HeaderData returns the SignBytes data for update verification.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq)]

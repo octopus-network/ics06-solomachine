@@ -3,6 +3,9 @@ use crate::v2::error::Error;
 use ibc_proto::ibc::lightclients::solomachine::v2::PacketCommitmentData as RawPacketCommitmentData;
 use ibc_proto::protobuf::Protobuf;
 
+pub const SOLOMACHINE_PACKET_COMMITMENT_DATA_TYPE_URL: &str =
+    "/ibc.lightclients.solomachine.v2.PacketCommitmentData";
+
 /// PacketCommitmentData returns the SignBytes data for packet commitment
 /// verification.
 #[derive(Clone, PartialEq)]

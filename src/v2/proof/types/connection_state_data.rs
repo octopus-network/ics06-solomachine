@@ -5,6 +5,9 @@ use ibc_proto::ibc::lightclients::solomachine::v2::ConnectionStateData as RawCon
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
+pub const SOLOMACHINE_CONNECTION_STATE_DATA_TYPE_URL: &str =
+    "/ibc.lightclients.solomachine.v2.ConnectionStateData";
+
 /// ConnectionStateData returns the SignBytes data for connection state
 /// verification.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

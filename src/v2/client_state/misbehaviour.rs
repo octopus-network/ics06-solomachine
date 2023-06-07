@@ -49,6 +49,7 @@ impl ClientState {
             sequence: misbehaviour.sequence.revision_height(),
             timestamp: signature_and_data.timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
+            //todo(davirain), need to deter DataType
             data_type: crate::v2::proof::types::DataType::Header,
             data: signature_and_data.data,
         };

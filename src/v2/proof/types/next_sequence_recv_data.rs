@@ -4,6 +4,9 @@ use ibc_proto::ibc::lightclients::solomachine::v2::NextSequenceRecvData as RawNe
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
+pub const SOLOMACHINE_NEXT_SEQUENCE_RECV_DATA_TYPE_URL: &str =
+    "/ibc.lightclients.solomachine.v2.NextSequenceRecvData";
+
 /// NextSequenceRecvData returns the SignBytes data for verification of the next
 /// sequence to be received.
 #[allow(clippy::derive_partial_eq_without_eq)]
