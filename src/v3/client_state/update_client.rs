@@ -1,10 +1,10 @@
 use super::ClientState;
-use crate::header::Header as SmHeader;
 use crate::prelude::*;
-use crate::proof::types::header_data::HeaderData;
-use crate::proof::types::sign_bytes::SignBytes;
-use crate::proof::types::signature_and_data::SignatureAndData;
-use crate::proof::verify_signature;
+use crate::v3::header::Header as SmHeader;
+use crate::v3::proof::types::header_data::HeaderData;
+use crate::v3::proof::types::sign_bytes::SignBytes;
+use crate::v3::proof::types::signature_and_data::SignatureAndData;
+use crate::v3::proof::verify_signature;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
 use ibc_proto::ibc::core::commitment::v1::MerklePath;

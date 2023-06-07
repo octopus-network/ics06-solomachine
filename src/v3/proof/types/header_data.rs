@@ -1,6 +1,6 @@
 use crate::cosmos::crypto::PublicKey;
-use crate::error::Error;
 use crate::prelude::*;
+use crate::v3::error::Error;
 use ibc_proto::ibc::lightclients::solomachine::v3::HeaderData as RawHeaderData;
 use ibc_proto::protobuf::Protobuf;
 
