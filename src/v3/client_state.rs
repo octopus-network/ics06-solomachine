@@ -18,7 +18,7 @@ use ibc::core::ics23_commitment::commitment::{
 };
 use ibc::core::ics23_commitment::merkle::apply_prefix;
 use ibc::core::ics23_commitment::merkle::MerkleProof;
-use ibc::core::ics24_host::identifier::ClientId;
+use ibc::core::ics24_host::identifier::{ChainId, ClientId};
 use ibc::core::ics24_host::path::ClientStatePath;
 use ibc::core::ics24_host::path::Path;
 use ibc::core::timestamp::Timestamp;
@@ -38,6 +38,8 @@ pub const SOLOMACHINE_CLIENT_STATE_TYPE_URL: &str = "/ibc.lightclients.solomachi
 /// state and if the client is frozen.
 #[derive(serde::Serialize, serde::Deserialize, Clone, PartialEq, Debug)]
 pub struct ClientState {
+    /// for chain id
+    pub chain_id: ChainId,
     /// latest sequence of the client state
     pub sequence: Height,
     /// frozen sequence of the solo machine
@@ -47,8 +49,14 @@ pub struct ClientState {
 
 impl ClientState {
     /// Create a new ClientState Instance.
-    pub fn new(sequence: Height, is_frozen: bool, consensus_state: SmConsensusState) -> Self {
+    pub fn new(
+        chain_id: ChainId,
+        sequence: Height,
+        is_frozen: bool,
+        consensus_state: SmConsensusState,
+    ) -> Self {
         Self {
+            chain_id,
             sequence,
             is_frozen,
             consensus_state,
@@ -366,14 +374,15 @@ impl TryFrom<RawSmClientState> for ClientState {
     type Error = Error;
 
     fn try_from(raw: RawSmClientState) -> Result<Self, Self::Error> {
+        let chain_id = ChainId::from_string(raw.chain_id.as_str());
         let sequence = Height::new(0, raw.sequence).map_err(Error::InvalidHeight)?;
-
         let consensus_state: SmConsensusState = raw
             .consensus_state
             .ok_or(Error::ConsensusStateIsEmpty)?
             .try_into()?;
 
         Ok(Self {
+            chain_id,
             sequence,
             is_frozen: raw.is_frozen,
             consensus_state,
@@ -383,10 +392,9 @@ impl TryFrom<RawSmClientState> for ClientState {
 
 impl From<ClientState> for RawSmClientState {
     fn from(value: ClientState) -> Self {
-        let sequence = value.sequence.revision_height();
-
         Self {
-            sequence,
+            chain_id: value.chain_id.to_string(),
+            sequence: value.sequence.revision_height(),
             is_frozen: value.is_frozen,
             consensus_state: Some(value.consensus_state.into()),
         }
