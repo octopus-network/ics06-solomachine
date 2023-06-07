@@ -24,6 +24,7 @@ pub struct ConsensusState {
     /// misbehaviour.
     pub diversifier: String,
     pub timestamp: Timestamp,
+    // todo(davirian), this can improve
     root: CommitmentRoot,
 }
 

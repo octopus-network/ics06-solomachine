@@ -42,8 +42,8 @@ impl Display for Header {
 
 impl ibc::core::ics02_client::header::Header for Header {
     fn height(&self) -> Height {
-        // because Header proto have not sequence field, so here use timestamp to create height
-        Height::new(0, self.timestamp.nanoseconds()).expect("contruct header height failed")
+        // todo(davirian), this can improve
+        Height::new(0, 9999).expect("never failed")
     }
 
     fn timestamp(&self) -> Timestamp {
@@ -113,4 +113,22 @@ impl From<Header> for Any {
 
 pub fn decode_header<B: Buf>(buf: B) -> Result<Header, Error> {
     RawSmHeader::decode(buf).map_err(Error::Decode)?.try_into()
+}
+
+#[test]
+fn test_header_der_ser() {
+    const EXAMPLE_JSON: &str = "{\"@type\":\"/cosmos.crypto.ed25519.PubKey\",\"key\":\"sEEsVGkXvyewKLWMJbHVDRkBoerW0IIwmj1rHkabtHU=\"}";
+
+    let fix_public_key = EXAMPLE_JSON.parse::<PublicKey>().unwrap();
+    let temp_header = Header {
+        timestamp: Timestamp::now(),
+        signature: vec![1, 2, 3],
+        new_public_key: fix_public_key,
+        new_diversifier: "test".into(),
+    };
+    let any_header = Any::from(temp_header);
+    let encode_any_header = any_header.encode_to_vec();
+    let decode_any_header = Any::decode(encode_any_header.as_ref()).unwrap();
+    println!("decode_any_header = {:?}", decode_any_header);
+    assert_eq!(decode_any_header, any_header);
 }
