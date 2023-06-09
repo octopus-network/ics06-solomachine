@@ -1,13 +1,13 @@
 use super::ClientState;
-use crate::header::Header as SmHeader;
 use crate::prelude::*;
-use crate::proof::types::header_data::HeaderData;
-use crate::proof::types::sign_bytes::SignBytes;
-use crate::proof::types::signature_and_data::SignatureAndData;
-use crate::proof::verify_signature;
+use crate::v2::header::Header as SmHeader;
+use crate::v2::proof::types::header_data::HeaderData;
+use crate::v2::proof::types::sign_bytes::SignBytes;
+use crate::v2::proof::types::signature_and_data::SignatureAndData;
+use crate::v2::proof::verify_signature;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
-use ibc_proto::ibc::core::commitment::v1::MerklePath;
+
 use ibc_proto::protobuf::Protobuf;
 impl ClientState {
     pub fn verify_header(
@@ -37,14 +37,8 @@ impl ClientState {
             sequence: self.sequence.revision_height(),
             timestamp: header.timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
-            // todo(davirain)
-            // ref: https://github.com/cosmos/ibc-go/blob/3765dfc3b89b16c81abcc3e0b1ad5823d7f7eaa0/modules/light-clients/06-solomachine/header.go#L13
-            // SentinelHeaderPath defines a placeholder path value used for headers in solomachine client updates
-            // const SentinelHeaderPath = "solomachine:header"
-            // ref: https://github.com/cosmos/ibc-go/blob/3765dfc3b89b16c81abcc3e0b1ad5823d7f7eaa0/modules/light-clients/06-solomachine/update.go#L48
-            path: MerklePath {
-                key_path: vec!["solomachine:header".to_string()],
-            },
+            // todo(davirain) need to deter DataType
+            data_type: crate::v2::proof::types::DataType::Header,
             data: data_bz,
         };
         let data = sign_bytes.encode_vec();

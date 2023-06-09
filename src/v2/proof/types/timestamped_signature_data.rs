@@ -1,9 +1,12 @@
-use crate::error::Error;
 use crate::prelude::*;
-use crate::proof::types::signature_and_data::SignatureAndData;
+use crate::v2::error::Error;
+use crate::v2::proof::types::signature_and_data::SignatureAndData;
 use ibc::core::timestamp::Timestamp;
-use ibc_proto::ibc::lightclients::solomachine::v3::TimestampedSignatureData as RawTimestampedSignatureData;
+use ibc_proto::ibc::lightclients::solomachine::v2::TimestampedSignatureData as RawTimestampedSignatureData;
 use ibc_proto::protobuf::Protobuf;
+
+pub const SOLOMACHINE_TIMESTAMPED_SIGNATURE_DATA_TYPE_URL: &str =
+    "/ibc.lightclients.solomachine.v2.TimestampedSignatureData";
 
 /// TimestampedSignatureData contains the signature data and the timestamp of the
 /// signature.

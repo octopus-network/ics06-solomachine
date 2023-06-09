@@ -1,5 +1,5 @@
-use crate::error::Error;
 use crate::prelude::*;
+use crate::v3::error::Error;
 use ibc::core::timestamp::Timestamp;
 use ibc_proto::ibc::core::commitment::v1::MerklePath;
 use ibc_proto::ibc::lightclients::solomachine::v3::SignatureAndData as RawSignatureAndData;

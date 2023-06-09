@@ -73,8 +73,8 @@ impl TryFrom<&Any> for LegacyAminoMultisig {
 #[cfg(test)]
 mod tests {
     use super::LegacyAminoMultisig;
-    use super::LEGACY_AMINO_MULTISIG_TYPE_URL;
     use crate::alloc::borrow::ToOwned;
+    use crate::cosmos::crypto::public_key::SECP256K1_TYPE_URL;
     use hex_literal::hex;
     use ibc_proto::google::protobuf::Any;
 
@@ -88,7 +88,7 @@ mod tests {
         let pk = LegacyAminoMultisig::try_from(&any).unwrap();
         assert_eq!(pk.threshold, 3);
         assert_eq!(pk.public_keys.len(), 5);
-        assert_eq!(pk.public_keys[0].type_url(), LEGACY_AMINO_MULTISIG_TYPE_URL);
+        assert_eq!(pk.public_keys[0].type_url(), SECP256K1_TYPE_URL);
         assert_eq!(
             pk.public_keys[0],
             tendermint::PublicKey::from_raw_secp256k1(&hex!(

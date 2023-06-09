@@ -1,16 +1,16 @@
 use crate::cosmos::crypto::PublicKey;
-use crate::error::Error;
 use crate::prelude::*;
+use crate::v2::error::Error;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::ics23_commitment::commitment::CommitmentRoot;
 use ibc::core::timestamp::Timestamp;
 use ibc_proto::google::protobuf::Any;
-use ibc_proto::ibc::lightclients::solomachine::v3::ConsensusState as RawSmConsensusState;
+use ibc_proto::ibc::lightclients::solomachine::v2::ConsensusState as RawSmConsensusState;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
 pub const SOLOMACHINE_CONSENSUS_STATE_TYPE_URL: &str =
-    "/ibc.lightclients.solomachine.v3.ConsensusState";
+    "/ibc.lightclients.solomachine.v2.ConsensusState";
 
 /// ConsensusState defines a solo machine consensus state. The sequence of a
 /// consensus state is contained in the "height" key used in storing the
