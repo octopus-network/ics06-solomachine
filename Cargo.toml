@@ -45,5 +45,5 @@ v2 = []
 v3 = []
 
 [patch.crates-io]
-ibc = { git = "https://github.com/DaviRain-Su/ibc-rs.git", branch = "fix-695" }
-ibc-proto = { git = "https://github.com/DaviRain-Su/ibc-proto-rs.git", branch = "full-cosmos-type-v0.30.0" }
+ibc = { git = "https://github.com/octopus-network/ibc-rs.git", branch = "main" }
+ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "cosmos-sdk-v0.47.2-ibc-v7.0.0" }

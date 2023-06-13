@@ -80,6 +80,6 @@ impl ClientState {
         &self,
         _misbehaviour: &SmMisbehaviour,
     ) -> Result<bool, ClientError> {
-        Ok(true)
+        Ok(false)
     }
 }

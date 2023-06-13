@@ -66,6 +66,6 @@ impl ClientState {
         _client_id: &ClientId,
         _header: SmHeader,
     ) -> Result<bool, ClientError> {
-        Ok(true)
+        Ok(false)
     }
 }
