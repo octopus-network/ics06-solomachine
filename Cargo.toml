@@ -20,15 +20,15 @@ bytes = { version = "1.2.1", default-features = false }
 serde_derive = { version = "1.0.104", default-features = false }
 serde = { version = "1.0", default-features = false }
 serde_json = { version = "1", default-features = false }
-k256 = { version = "0.13", features = ["ecdsa", "sha256"], default-features = false }
-tendermint = { version = "0.31", features = ["secp256k1", "rust-crypto"], default-features = false }
+k256 = { version = "0.11", features = ["ecdsa", "sha256"], default-features = false }
+tendermint = { version = "0.30", features = ["secp256k1", "rust-crypto"], default-features = false }
 subtle-encoding = { version = "0.5", default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.4"
 
 [features]
-default = ["std", "v2"]
+default = ["std", "v1"]
 std = [
     "ibc/std",
     "ibc-proto/std",
@@ -41,10 +41,11 @@ std = [
     "tendermint/std",
     "subtle-encoding/std",
 ]
+v1 = []
 v2 = []
 v3 = []
 
 [patch.crates-io]
 # commit is : Update ibc-proto dep
-ibc = { git = "https://github.com/octopus-network/ibc-rs.git", rev = "addbf0676e3add18bcfde0edd623ee0f7ce07378" }
-ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "cosmos-sdk-v0.47.2-ibc-v7.0.0" }
+# ibc = { git = "https://github.com/octopus-network/ibc-rs.git", rev = "addbf0676e3add18bcfde0edd623ee0f7ce07378" }
+# ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "cosmos-sdk-v0.47.2-ibc-v7.0.0" }
