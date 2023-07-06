@@ -13,7 +13,7 @@ description  = """
 
 [dependencies]
 ibc = { version = "0.41.0", features = ["serde", "parity-scale-codec", "borsh"], default-features = false }
-ibc-proto = { version = "0.30.0", features = ["parity-scale-codec", "borsh"], default-features = false }
+ibc-proto = { version = "0.32.0", features = ["parity-scale-codec", "borsh"], default-features = false }
 prost = { version = "0.11", default-features = false }
 displaydoc = { version = "0.2", default-features = false }
 bytes = { version = "1.2.1", default-features = false }
@@ -46,5 +46,6 @@ v3 = []
 
 [patch.crates-io]
 # commit is : Update ibc-proto dep
-ibc = { git = "https://github.com/octopus-network/ibc-rs.git", rev = "addbf0676e3add18bcfde0edd623ee0f7ce07378" }
-ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "cosmos-sdk-v0.47.2-ibc-v7.0.0" }
+ibc = { git = "https://github.com/octopus-network/ibc-rs.git", branch = "for-near-ibc-pre2" }
+ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "for-near-ibc-pre2" }
+ics23 = { git = "https://github.com/octopus-network/ics23.git", branch = "for-near-ibc-pre2" }
