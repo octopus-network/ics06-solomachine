@@ -23,6 +23,12 @@ pub struct Header {
     pub new_diversifier: String,
 }
 
+impl Header {
+    pub fn height(&self) -> Height {
+        self.sequence
+    }
+}
+
 impl core::fmt::Debug for Header {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
         write!(f, " Header {{...}}")

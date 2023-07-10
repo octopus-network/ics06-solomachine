@@ -7,8 +7,8 @@ use crate::v2::proof::types::sign_bytes::SignBytes;
 use crate::v2::proof::verify_signature;
 use crate::v2::ValidationContext as SmValidationContext;
 use ibc::core::ics02_client::error::ClientError;
+use ibc::core::ics24_host::identifier::ClientId;
 use ibc::core::timestamp::Timestamp;
-use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
 use ibc_proto::protobuf::Protobuf;
 
 use super::ClientState;
@@ -18,8 +18,8 @@ impl ClientState {
     // the same height would have convinced the light client.
     pub fn verify_misbehaviour<ClientValidationContext>(
         &self,
-        ctx: &ClientValidationContext,
-        client_id: &ClientId,
+        _ctx: &ClientValidationContext,
+        _client_id: &ClientId,
         misbehaviour: SmMisbehaviour,
     ) -> Result<(), ClientError>
     where

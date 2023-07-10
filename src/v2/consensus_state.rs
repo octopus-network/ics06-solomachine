@@ -9,6 +9,8 @@ use ibc_proto::ibc::lightclients::solomachine::v2::ConsensusState as RawSmConsen
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
 
+use super::header::Header;
+
 pub const SOLOMACHINE_CONSENSUS_STATE_TYPE_URL: &str =
     "/ibc.lightclients.solomachine.v2.ConsensusState";
 
@@ -31,10 +33,10 @@ pub struct ConsensusState {
 impl ConsensusState {
     pub fn new(public_key: PublicKey, diversifier: String, timestamp: Timestamp) -> Self {
         Self {
-            public_key,
+            public_key: public_key.clone(),
             diversifier,
             timestamp,
-            root: CommitmentRoot::from(vec![]),
+            root: CommitmentRoot::from(public_key.to_bytes()),
         }
     }
 
@@ -144,6 +146,17 @@ impl From<ConsensusState> for Any {
         Any {
             type_url: SOLOMACHINE_CONSENSUS_STATE_TYPE_URL.to_string(),
             value: Protobuf::<RawSmConsensusState>::encode_vec(&consensus_state),
+        }
+    }
+}
+
+impl From<Header> for ConsensusState {
+    fn from(header: Header) -> Self {
+        Self {
+            public_key: header.new_public_key,
+            diversifier: header.new_diversifier,
+            timestamp: header.timestamp,
+            root: CommitmentRoot::from(header.new_public_key.to_bytes()),
         }
     }
 }

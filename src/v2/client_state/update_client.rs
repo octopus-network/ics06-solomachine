@@ -7,13 +7,13 @@ use crate::v2::proof::types::signature_and_data::SignatureAndData;
 use crate::v2::proof::verify_signature;
 use crate::v2::ValidationContext as SmValidationContext;
 use ibc::core::ics02_client::error::ClientError;
-use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
+use ibc::core::ics24_host::identifier::ClientId;
 use ibc_proto::protobuf::Protobuf;
 impl ClientState {
     pub fn verify_header<ClientValidationContext>(
         &self,
-        ctx: &ClientValidationContext,
-        client_id: &ClientId,
+        _ctx: &ClientValidationContext,
+        _client_id: &ClientId,
         header: SmHeader,
     ) -> Result<(), ClientError>
     where
@@ -59,9 +59,9 @@ impl ClientState {
 
     pub fn check_for_misbehaviour_update_client<ClientValidationContext>(
         &self,
-        ctx: &ClientValidationContext,
-        client_id: &ClientId,
-        header: SmHeader,
+        _ctx: &ClientValidationContext,
+        _client_id: &ClientId,
+        _header: SmHeader,
     ) -> Result<bool, ClientError>
     where
         ClientValidationContext: SmValidationContext,
