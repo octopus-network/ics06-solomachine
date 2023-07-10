@@ -5,17 +5,20 @@ use crate::v2::proof::types::header_data::HeaderData;
 use crate::v2::proof::types::sign_bytes::SignBytes;
 use crate::v2::proof::types::signature_and_data::SignatureAndData;
 use crate::v2::proof::verify_signature;
+use crate::v2::ValidationContext as SmValidationContext;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
-
 use ibc_proto::protobuf::Protobuf;
 impl ClientState {
-    pub fn verify_header(
+    pub fn verify_header<ClientValidationContext>(
         &self,
-        _ctx: &dyn ValidationContext,
-        _client_id: &ClientId,
+        ctx: &ClientValidationContext,
+        client_id: &ClientId,
         header: SmHeader,
-    ) -> Result<(), ClientError> {
+    ) -> Result<(), ClientError>
+    where
+        ClientValidationContext: SmValidationContext,
+    {
         // assert update timestamp is not less than current consensus state timestamp
         if header.timestamp < self.consensus_state.timestamp {
             return Err(ClientError::Other {
@@ -54,12 +57,15 @@ impl ClientState {
         })
     }
 
-    pub fn check_for_misbehaviour_update_client(
+    pub fn check_for_misbehaviour_update_client<ClientValidationContext>(
         &self,
-        _ctx: &dyn ValidationContext,
-        _client_id: &ClientId,
-        _header: SmHeader,
-    ) -> Result<bool, ClientError> {
+        ctx: &ClientValidationContext,
+        client_id: &ClientId,
+        header: SmHeader,
+    ) -> Result<bool, ClientError>
+    where
+        ClientValidationContext: SmValidationContext,
+    {
         Ok(false)
     }
 }

@@ -1,3 +1,7 @@
+use super::{
+    client_type as sm_client_type, ExecutionContext as SmExecutionContext,
+    ValidationContext as SmValidationContext,
+};
 use crate::cosmos::crypto::PublicKey;
 use crate::prelude::*;
 use crate::v2::consensus_state::ConsensusState as SmConsensusState;
@@ -13,11 +17,13 @@ use crate::v2::proof::{
     consensus_state_sign_bytes, next_sequence_recv_sign_bytes, packet_acknowledgement_sign_bytes,
     packet_commitment_sign_bytes, verify_signature,
 };
-use ibc::core::ics02_client::client_state::UpdateKind;
-use ibc::core::ics02_client::client_state::{ClientState as Ics2ClientState, UpdatedState};
+use ibc::core::ics02_client::client_state::{
+    ClientStateCommon, ClientStateExecution, ClientStateValidation, UpdateKind,
+};
 use ibc::core::ics02_client::client_type::ClientType;
 use ibc::core::ics02_client::consensus_state::ConsensusState;
 use ibc::core::ics02_client::error::ClientError;
+use ibc::core::ics02_client::ClientExecutionContext;
 use ibc::core::ics23_commitment::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
@@ -33,7 +39,6 @@ use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v2::ClientState as RawSmClientState;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
-
 pub mod misbehaviour;
 pub mod update_client;
 
@@ -51,6 +56,355 @@ pub struct ClientState {
     /// when set to true, will allow governance to update a solo machine client.
     /// The client will be unfrozen if it is frozen.
     pub allow_update_after_proposal: bool,
+}
+
+impl ClientStateCommon for ClientState {
+    fn verify_consensus_state(&self, consensus_state: Any) -> Result<(), ClientError> {
+        // let tm_consensus_state = TmConsensusState::try_from(consensus_state)?;
+        // if tm_consensus_state.root().is_empty() {
+        //     return Err(ClientError::Other {
+        //         description: "empty commitment root".into(),
+        //     });
+        // };
+
+        Ok(())
+    }
+
+    fn client_type(&self) -> ClientType {
+        // tm_client_type()
+        todo!()
+    }
+
+    fn latest_height(&self) -> Height {
+        // self.latest_height
+        todo!()
+    }
+
+    fn validate_proof_height(&self, proof_height: Height) -> Result<(), ClientError> {
+        // if self.latest_height() < proof_height {
+        //     return Err(ClientError::InvalidProofHeight {
+        //         latest_height: self.latest_height(),
+        //         proof_height,
+        //     });
+        // }
+        // Ok(())
+        Ok(())
+    }
+
+    fn confirm_not_frozen(&self) -> Result<(), ClientError> {
+        // if let Some(frozen_height) = self.frozen_height {
+        //     return Err(ClientError::ClientFrozen {
+        //         description: format!("the client is frozen at height {frozen_height}"),
+        //     });
+        // }
+        // Ok(())
+        Ok(())
+    }
+
+    fn expired(&self, elapsed: Duration) -> bool {
+        // elapsed > self.trusting_period
+        false
+    }
+
+    /// Perform client-specific verifications and check all data in the new
+    /// client state to be the same across all valid Tendermint clients for the
+    /// new chain.
+    ///
+    /// You can learn more about how to upgrade IBC-connected SDK chains in
+    /// [this](https://ibc.cosmos.network/main/ibc/upgrades/quick-guide.html)
+    /// guide
+    fn verify_upgrade_client(
+        &self,
+        upgraded_client_state: Any,
+        upgraded_consensus_state: Any,
+        proof_upgrade_client: CommitmentProofBytes,
+        proof_upgrade_consensus_state: CommitmentProofBytes,
+        root: &CommitmentRoot,
+    ) -> Result<(), ClientError> {
+        // // Make sure that the client type is of Tendermint type `ClientState`
+        // let upgraded_tm_client_state = Self::try_from(upgraded_client_state.clone())?;
+
+        // // Make sure that the consensus type is of Tendermint type `ConsensusState`
+        // TmConsensusState::try_from(upgraded_consensus_state.clone())?;
+
+        // // Make sure the latest height of the current client is not greater then
+        // // the upgrade height This condition checks both the revision number and
+        // // the height
+        // if self.latest_height() >= upgraded_tm_client_state.latest_height {
+        //     return Err(UpgradeClientError::LowUpgradeHeight {
+        //         upgraded_height: self.latest_height(),
+        //         client_height: upgraded_tm_client_state.latest_height,
+        //     })?;
+        // }
+
+        // // Check to see if the upgrade path is set
+        // let mut upgrade_path = self.upgrade_path.clone();
+        // if upgrade_path.pop().is_none() {
+        //     return Err(ClientError::ClientSpecific {
+        //         description: "cannot upgrade client as no upgrade path has been set".to_string(),
+        //     });
+        // };
+
+        // let upgrade_path_prefix = CommitmentPrefix::try_from(upgrade_path[0].clone().into_bytes())
+        //     .map_err(ClientError::InvalidCommitmentProof)?;
+
+        // let last_height = self.latest_height().revision_height();
+
+        // let mut client_state_value = Vec::new();
+        // upgraded_client_state
+        //     .encode(&mut client_state_value)
+        //     .map_err(ClientError::Encode)?;
+
+        // // Verify the proof of the upgraded client state
+        // self.verify_membership(
+        //     &upgrade_path_prefix,
+        //     &proof_upgrade_client,
+        //     root,
+        //     Path::UpgradeClient(UpgradeClientPath::UpgradedClientState(last_height)),
+        //     client_state_value,
+        // )?;
+
+        // let mut cons_state_value = Vec::new();
+        // upgraded_consensus_state
+        //     .encode(&mut cons_state_value)
+        //     .map_err(ClientError::Encode)?;
+
+        // // Verify the proof of the upgraded consensus state
+        // self.verify_membership(
+        //     &upgrade_path_prefix,
+        //     &proof_upgrade_consensus_state,
+        //     root,
+        //     Path::UpgradeClient(UpgradeClientPath::UpgradedClientConsensusState(last_height)),
+        //     cons_state_value,
+        // )?;
+
+        Ok(())
+    }
+
+    fn verify_membership(
+        &self,
+        prefix: &CommitmentPrefix,
+        proof: &CommitmentProofBytes,
+        root: &CommitmentRoot,
+        path: Path,
+        value: Vec<u8>,
+    ) -> Result<(), ClientError> {
+        // let merkle_path = apply_prefix(prefix, vec![path.to_string()]);
+        // let merkle_proof: MerkleProof = RawMerkleProof::try_from(proof.clone())
+        //     .map_err(ClientError::InvalidCommitmentProof)?
+        //     .into();
+
+        // merkle_proof
+        //     .verify_membership(
+        //         &self.proof_specs,
+        //         root.clone().into(),
+        //         merkle_path,
+        //         value,
+        //         0,
+        //     )
+        //     .map_err(ClientError::Ics23Verification)
+        Ok(())
+    }
+
+    fn verify_non_membership(
+        &self,
+        prefix: &CommitmentPrefix,
+        proof: &CommitmentProofBytes,
+        root: &CommitmentRoot,
+        path: Path,
+    ) -> Result<(), ClientError> {
+        // let merkle_path = apply_prefix(prefix, vec![path.to_string()]);
+        // let merkle_proof: MerkleProof = RawMerkleProof::try_from(proof.clone())
+        //     .map_err(ClientError::InvalidCommitmentProof)?
+        //     .into();
+
+        // merkle_proof
+        //     .verify_non_membership(&self.proof_specs, root.clone().into(), merkle_path)
+        //     .map_err(ClientError::Ics23Verification)
+        Ok(())
+    }
+}
+
+impl<ClientValidationContext> ClientStateValidation<ClientValidationContext> for ClientState
+where
+    ClientValidationContext: SmValidationContext,
+{
+    fn verify_client_message(
+        &self,
+        ctx: &ClientValidationContext,
+        client_id: &ClientId,
+        client_message: Any,
+        update_kind: &UpdateKind,
+    ) -> Result<(), ClientError> {
+        // match update_kind {
+        //     UpdateKind::UpdateClient => {
+        //         let header = TmHeader::try_from(client_message)?;
+        //         self.verify_header(ctx, client_id, header)
+        //     }
+        //     UpdateKind::SubmitMisbehaviour => {
+        //         let misbehaviour = TmMisbehaviour::try_from(client_message)?;
+        //         self.verify_misbehaviour(ctx, client_id, misbehaviour)
+        //     }
+        // }
+        todo!()
+    }
+
+    fn check_for_misbehaviour(
+        &self,
+        ctx: &ClientValidationContext,
+        client_id: &ClientId,
+        client_message: Any,
+        update_kind: &UpdateKind,
+    ) -> Result<bool, ClientError> {
+        // match update_kind {
+        //     UpdateKind::UpdateClient => {
+        //         let header = TmHeader::try_from(client_message)?;
+        //         self.check_for_misbehaviour_update_client(ctx, client_id, header)
+        //     }
+        //     UpdateKind::SubmitMisbehaviour => {
+        //         let misbehaviour = TmMisbehaviour::try_from(client_message)?;
+        //         self.check_for_misbehaviour_misbehavior(&misbehaviour)
+        //     }
+        // }
+        todo!()
+    }
+}
+
+impl<E> ClientStateExecution<E> for ClientState
+where
+    E: SmExecutionContext,
+    <E as ClientExecutionContext>::AnyClientState: From<ClientState>,
+    <E as ClientExecutionContext>::AnyConsensusState: From<SmConsensusState>,
+{
+    fn initialise(
+        &self,
+        ctx: &mut E,
+        client_id: &ClientId,
+        consensus_state: Any,
+    ) -> Result<(), ClientError> {
+        // let tm_consensus_state = TmConsensusState::try_from(consensus_state)?;
+
+        // ctx.store_client_state(ClientStatePath::new(client_id), self.clone().into())?;
+        // ctx.store_consensus_state(
+        //     ClientConsensusStatePath::new(client_id, &self.latest_height),
+        //     tm_consensus_state.into(),
+        // )?;
+
+        // Ok(())
+        todo!()
+    }
+
+    fn update_state(
+        &self,
+        ctx: &mut E,
+        client_id: &ClientId,
+        header: Any,
+    ) -> Result<Vec<Height>, ClientError> {
+        todo!()
+        // let header = TmHeader::try_from(header)?;
+        // let header_height = header.height();
+
+        // let maybe_existing_consensus_state = {
+        //     let path_at_header_height = ClientConsensusStatePath::new(client_id, &header_height);
+
+        //     ctx.consensus_state(&path_at_header_height).ok()
+        // };
+
+        // if maybe_existing_consensus_state.is_some() {
+        //     // if we already had the header installed by a previous relayer
+        //     // then this is a no-op.
+        //     //
+        //     // Do nothing.
+        // } else {
+        //     let new_consensus_state = TmConsensusState::from(header.clone());
+        //     let new_client_state = self.clone().with_header(header)?;
+
+        //     ctx.store_consensus_state(
+        //         ClientConsensusStatePath::new(client_id, &new_client_state.latest_height),
+        //         new_consensus_state.into(),
+        //     )?;
+        //     ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into())?;
+        // }
+
+        // let updated_heights = vec![header_height];
+        // Ok(updated_heights)
+    }
+
+    fn update_state_on_misbehaviour(
+        &self,
+        ctx: &mut E,
+        client_id: &ClientId,
+        _client_message: Any,
+        _update_kind: &UpdateKind,
+    ) -> Result<(), ClientError> {
+        // let frozen_client_state = self.clone().with_frozen_height(Height::min(0));
+
+        // ctx.store_client_state(ClientStatePath::new(client_id), frozen_client_state.into())?;
+
+        // Ok(())
+        Ok(())
+    }
+
+    // Commit the new client state and consensus state to the store
+    fn update_state_on_upgrade(
+        &self,
+        ctx: &mut E,
+        client_id: &ClientId,
+        upgraded_client_state: Any,
+        upgraded_consensus_state: Any,
+    ) -> Result<Height, ClientError> {
+        todo!()
+        // let mut upgraded_tm_client_state = Self::try_from(upgraded_client_state)?;
+        // let upgraded_tm_cons_state = TmConsensusState::try_from(upgraded_consensus_state)?;
+
+        // upgraded_tm_client_state.zero_custom_fields();
+
+        // // Construct new client state and consensus state relayer chosen client
+        // // parameters are ignored. All chain-chosen parameters come from
+        // // committed client, all client-chosen parameters come from current
+        // // client.
+        // let new_client_state = ClientState::new(
+        //     upgraded_tm_client_state.chain_id,
+        //     self.trust_level,
+        //     self.trusting_period,
+        //     upgraded_tm_client_state.unbonding_period,
+        //     self.max_clock_drift,
+        //     upgraded_tm_client_state.latest_height,
+        //     upgraded_tm_client_state.proof_specs,
+        //     upgraded_tm_client_state.upgrade_path,
+        //     self.allow_update,
+        // )?;
+
+        // // The new consensus state is merely used as a trusted kernel against
+        // // which headers on the new chain can be verified. The root is just a
+        // // stand-in sentinel value as it cannot be known in advance, thus no
+        // // proof verification will pass. The timestamp and the
+        // // NextValidatorsHash of the consensus state is the blocktime and
+        // // NextValidatorsHash of the last block committed by the old chain. This
+        // // will allow the first block of the new chain to be verified against
+        // // the last validators of the old chain so long as it is submitted
+        // // within the TrustingPeriod of this client.
+        // // NOTE: We do not set processed time for this consensus state since
+        // // this consensus state should not be used for packet verification as
+        // // the root is empty. The next consensus state submitted using update
+        // // will be usable for packet-verification.
+        // let sentinel_root = "sentinel_root".as_bytes().to_vec();
+        // let new_consensus_state = TmConsensusState::new(
+        //     sentinel_root.into(),
+        //     upgraded_tm_cons_state.timestamp,
+        //     upgraded_tm_cons_state.next_validators_hash,
+        // );
+
+        // let latest_height = new_client_state.latest_height;
+
+        // ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into())?;
+        // ctx.store_consensus_state(
+        //     ClientConsensusStatePath::new(client_id, &latest_height),
+        //     new_consensus_state.into(),
+        // )?;
+
+        // Ok(latest_height)
+    }
 }
 
 impl ClientState {
@@ -157,389 +511,6 @@ impl ClientState {
             timestamp,
             height.revision_height(),
         ))
-    }
-}
-
-impl Ics2ClientState for ClientState {
-    /// ClientType is Solo Machine.
-    fn client_type(&self) -> ClientType {
-        crate::v2::client_type()
-    }
-
-    /// latest_height returns the latest sequence number.
-    fn latest_height(&self) -> Height {
-        self.latest_height()
-    }
-
-    /// Check if the given proof has a valid height for the client
-    fn validate_proof_height(&self, proof_height: Height) -> Result<(), ClientError> {
-        if self.latest_height() < proof_height {
-            return Err(ClientError::InvalidProofHeight {
-                latest_height: self.latest_height(),
-                proof_height,
-            });
-        }
-        Ok(())
-    }
-
-    /// Assert that the client is not frozen
-    fn confirm_not_frozen(&self) -> Result<(), ClientError> {
-        if self.is_frozen {
-            return Err(ClientError::ClientFrozen {
-                description: "the client is frozen".into(),
-            });
-        }
-        Ok(())
-    }
-
-    /// Check if the state is expired when `elapsed` time has passed since the latest consensus
-    /// state timestamp
-    fn expired(&self, _elapsed: Duration) -> bool {
-        // todo(davirian)
-        false
-    }
-
-    fn initialise(&self, consensus_state: Any) -> Result<Box<dyn ConsensusState>, ClientError> {
-        SmConsensusState::try_from(consensus_state).map(SmConsensusState::into_box)
-    }
-
-    /// verify_client_message must verify a client_message. A client_message
-    /// could be a Header, Misbehaviour. It must handle each type of
-    /// client_message appropriately. Calls to check_for_misbehaviour,
-    /// update_state, and update_state_on_misbehaviour will assume that the
-    /// content of the client_message has been verified and can be trusted. An
-    /// error should be returned if the client_message fails to verify.
-    ///
-    /// VerifyClientMessage introspects the provided ClientMessage and checks its validity
-    /// A Solomachine Header is considered valid if the currently registered public key has signed over
-    /// the new public key with the correct sequence.
-    /// A Solomachine Misbehaviour is considered valid if duplicate signatures of the current public key
-    /// are found on two different messages at a given sequence.
-    fn verify_client_message(
-        &self,
-        ctx: &dyn ValidationContext,
-        client_id: &ClientId,
-        client_message: Any,
-        update_kind: &UpdateKind,
-    ) -> Result<(), ClientError> {
-        match update_kind {
-            UpdateKind::UpdateClient => {
-                let header = SmHeader::try_from(client_message)?;
-                self.verify_header(ctx, client_id, header)
-            }
-            UpdateKind::SubmitMisbehaviour => {
-                let misbehaviour = SmMisbehaviour::try_from(client_message)?;
-                self.verify_misbehaviour(ctx, client_id, misbehaviour)
-            }
-        }
-    }
-
-    /// Checks for evidence of a misbehaviour in Header or Misbehaviour type. It
-    /// assumes the client_message has already been verified.
-    fn check_for_misbehaviour(
-        &self,
-        ctx: &dyn ValidationContext,
-        client_id: &ClientId,
-        client_message: Any,
-        update_kind: &UpdateKind,
-    ) -> Result<bool, ClientError> {
-        match update_kind {
-            UpdateKind::UpdateClient => {
-                let header = SmHeader::try_from(client_message)?;
-                self.check_for_misbehaviour_update_client(ctx, client_id, header)
-            }
-            UpdateKind::SubmitMisbehaviour => {
-                let misbehaviour = SmMisbehaviour::try_from(client_message)?;
-                self.check_for_misbehaviour_misbehavior(&misbehaviour)
-            }
-        }
-    }
-
-    /// Updates and stores as necessary any associated information for an IBC
-    /// client, such as the ClientState and corresponding ConsensusState. Upon
-    /// successful update, a list of consensus heights is returned. It assumes
-    /// the client_message has already been verified.
-    ///
-    /// Post-condition: on success, the return value MUST contain at least one
-    /// height.
-    // ref: https://github.com/cosmos/ibc-go/blob/388283012124fd3cd66c9541000541d9c6767117/modules/light-clients/06-solomachine/update.go#L80
-    fn update_state(
-        &self,
-        ctx: &mut dyn ExecutionContext,
-        client_id: &ClientId,
-        header: Any,
-    ) -> Result<Vec<Height>, ClientError> {
-        let sm_header = SmHeader::try_from(header).map_err(|e| ClientError::Other {
-            description: format!("decode SmHeader Error({})", e),
-        })?;
-
-        let consensus_state = SmConsensusState::new(
-            sm_header.new_public_key,
-            sm_header.new_diversifier,
-            sm_header.timestamp,
-        );
-        let mut new_client_state = self.clone();
-        new_client_state.sequence.increment();
-        let new_height = new_client_state.sequence;
-        new_client_state.consensus_state = consensus_state;
-
-        ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into_box())?;
-
-        Ok(vec![new_height])
-    }
-
-    /// update_state_on_misbehaviour should perform appropriate state changes on
-    /// a client state given that misbehaviour has been detected and verified
-    fn update_state_on_misbehaviour(
-        &self,
-        ctx: &mut dyn ExecutionContext,
-        client_id: &ClientId,
-        _client_message: Any,
-        _update_kind: &UpdateKind,
-    ) -> Result<(), ClientError> {
-        let frozen_client_state = self.clone().with_frozen().into_box();
-
-        ctx.store_client_state(ClientStatePath::new(client_id), frozen_client_state)?;
-
-        Ok(())
-    }
-
-    /// Verify the upgraded client and consensus states and validate proofs
-    /// against the given root.
-    ///
-    /// NOTE: proof heights are not included as upgrade to a new revision is
-    /// expected to pass only on the last height committed by the current
-    /// revision. Clients are responsible for ensuring that the planned last
-    /// height of the current revision is somehow encoded in the proof
-    /// verification process. This is to ensure that no premature upgrades
-    /// occur, since upgrade plans committed to by the counterparty may be
-    /// cancelled or modified before the last planned height.
-    fn verify_upgrade_client(
-        &self,
-        _upgraded_client_state: Any,
-        _upgraded_consensus_state: Any,
-        _proof_upgrade_client: MerkleProof,
-        _proof_upgrade_consensus_state: MerkleProof,
-        _root: &CommitmentRoot,
-    ) -> Result<(), ClientError> {
-        Ok(())
-    }
-
-    // Update the client state and consensus state in the store with the upgraded ones.
-    fn update_state_with_upgrade_client(
-        &self,
-        _upgraded_client_state: Any,
-        _upgraded_consensus_state: Any,
-    ) -> Result<UpdatedState, ClientError> {
-        // ref: https://github.com/cosmos/ibc-go/blob/f32b1052e1357949e6a67685d355c7bcc6242b84/modules/light-clients/06-solomachine/client_state.go#L99
-        Err(ClientError::Other {
-            description: "cannot upgrade solomachine client".into(),
-        })
-    }
-
-    // Verify_membership is a generic proof verification method which verifies a
-    // proof of the existence of a value at a given Path.
-    fn verify_membership(
-        &self,
-        prefix: &CommitmentPrefix,
-        proof: &CommitmentProofBytes,
-        _root: &CommitmentRoot,
-        path: Path,
-        value: Vec<u8>,
-    ) -> Result<(), ClientError> {
-        match path {
-            // VerifyClientState verifies a proof of the client state of the running chain
-            // stored on the solo machine.
-            Path::ClientState(client_state_path) => {
-                // NOTE: the proof height sequence is incremented by one due to the connection handshake verification ordering
-                let height = self.sequence.increment();
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![client_state_path.to_string()]);
-                let sign_bz = client_state_sign_bytes(
-                    sequence,
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::ClientConsensusState(client_consensus_state_path) => {
-                // NOTE: the proof height sequence is incremented by one due to the connection handshake verification ordering
-                let height = self.sequence.increment();
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![client_consensus_state_path.to_string()]);
-                let sign_bz = consensus_state_sign_bytes(
-                    sequence,
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::ClientConnection(_value) => Ok(()),
-            Path::Connection(connection_path) => {
-                let height = self.sequence;
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![connection_path.to_string()]);
-
-                let sign_bz = connection_state_sign_bytes(
-                    sequence,
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::Ports(_value) => Ok(()),
-            Path::ChannelEnd(channel_end_path) => {
-                let height = self.sequence;
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![channel_end_path.to_string()]);
-
-                let sign_bz = channel_state_sign_bytes(
-                    sequence,
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::SeqSend(_value) => Ok(()),
-            Path::SeqRecv(next_sequence_recv_path) => {
-                let height = self.sequence;
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![next_sequence_recv_path.to_string()]);
-
-                let sign_bz = next_sequence_recv_sign_bytes(
-                    sequence,
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::SeqAck(_value) => Ok(()),
-            Path::Commitment(packet_commitment_path) => {
-                let height = self.sequence;
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![packet_commitment_path.to_string()]);
-
-                let sign_bz = packet_commitment_sign_bytes(
-                    sequence,
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::Ack(packet_acknowledgement_path) => {
-                let height = self.sequence;
-                let (public_key, sig_data, timestamp, sequence) =
-                    self.produce_verification_args(&height, prefix, proof)?;
-                let path = apply_prefix(prefix, vec![packet_acknowledgement_path.to_string()]);
-
-                let sign_bz = packet_acknowledgement_sign_bytes(
-                    sequence,
-                    timestamp.nanoseconds(),
-                    self.consensus_state.clone().diversifier,
-                    path,
-                    value,
-                );
-                verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                    description: e.to_string(),
-                })
-            }
-            Path::Receipt(_packet_receipt_absence_path) => {
-                // let height = self.sequence;
-                // let (public_key, sig_data, timestamp, sequence) =
-                //     self.produce_verification_args(&height, prefix, proof)?;
-                // let path = apply_prefix(prefix, vec![packet_receipt_absence_path.to_string()]);
-
-                // let sign_bz = packet_receipt_absence_sign_bytes(
-                //     sequence.revision_height(),
-                //     timestamp.nanoseconds(),
-                //     self.consensus_state.clone().diversifier,
-                //     path,
-                //     value,
-                // );
-                // verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-                //     description: e.to_string(),
-                // })
-                Ok(())
-            }
-            Path::UpgradeClient(_value) => Ok(()),
-        }
-    }
-
-    // Verify_non_membership is a generic proof verification method which
-    // verifies the absence of a given commitment.
-    //
-    // VerifyNonMembership is a generic proof verification method which verifies the absence
-    // of a given CommitmentPath at the latest sequence.
-    // The caller is expected to construct the full CommitmentPath from a CommitmentPrefix
-    // and a standardized path (as defined in ICS 24).
-    fn verify_non_membership(
-        &self,
-        prefix: &CommitmentPrefix,
-        proof: &CommitmentProofBytes,
-        _root: &CommitmentRoot,
-        path: Path,
-    ) -> Result<(), ClientError> {
-        let height = self.sequence.increment();
-        let (public_key, sig_data, timestamp, sequence) =
-            self.produce_verification_args(&height, prefix, proof)?;
-        let data_type = match path {
-            Path::ClientState(_) => DataType::ClientState,
-            Path::ClientConsensusState(_) => DataType::ConsensusState,
-            Path::ClientConnection(_) => DataType::ConnectionState,
-            Path::Connection(_) => DataType::ConnectionState,
-            Path::Ports(_) => DataType::Header,
-            Path::ChannelEnd(_) => DataType::ChannelState,
-            Path::SeqSend(_) => DataType::Header,
-            Path::SeqRecv(_) => DataType::NextSequenceRecv,
-            Path::SeqAck(_) => DataType::Header,
-            Path::Commitment(_) => DataType::PacketCommitment,
-            Path::Ack(_) => DataType::PacketAcknowledgement,
-            Path::Receipt(_) => DataType::Header,
-            Path::UpgradeClient(_) => DataType::Header,
-        };
-        let sign_bytes = SignBytes {
-            sequence,
-            timestamp: timestamp.nanoseconds(),
-            diversifier: self.consensus_state.diversifier.clone(),
-            data_type,
-            data: vec![],
-        };
-        let sign_bz = sign_bytes.encode_vec();
-        verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
-            description: e.to_string(),
-        })
     }
 }
 

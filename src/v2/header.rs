@@ -43,16 +43,6 @@ impl Display for Header {
     }
 }
 
-impl ibc::core::ics02_client::header::Header for Header {
-    fn height(&self) -> Height {
-        self.sequence
-    }
-
-    fn timestamp(&self) -> Timestamp {
-        self.timestamp
-    }
-}
-
 impl Protobuf<RawSmHeader> for Header {}
 
 impl TryFrom<RawSmHeader> for Header {
