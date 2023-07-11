@@ -7,7 +7,7 @@ use crate::v3::proof::types::signature_and_data::SignatureAndData;
 use crate::v3::proof::verify_signature;
 use crate::v3::ValidationContext as SmValidationContext;
 use ibc::core::ics02_client::error::ClientError;
-use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
+use ibc::core::ics24_host::identifier::ClientId;
 use ibc_proto::ibc::core::commitment::v1::MerklePath;
 use ibc_proto::protobuf::Protobuf;
 

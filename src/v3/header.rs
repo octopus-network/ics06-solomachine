@@ -4,7 +4,6 @@ use crate::v3::error::Error;
 use bytes::Buf;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;
-use ibc::Height;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v3::Header as RawSmHeader;
 use ibc_proto::protobuf::Protobuf;

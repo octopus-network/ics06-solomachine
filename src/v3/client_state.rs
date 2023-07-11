@@ -12,7 +12,6 @@ use crate::v3::proof::types::sign_bytes::SignBytes;
 use crate::v3::proof::types::signature_and_data::SignatureAndData;
 use crate::v3::proof::types::timestamped_signature_data::TimestampedSignatureData;
 use crate::v3::proof::verify_signature;
-use ibc::core::ics02_client::client_state::ClientState as Ics2ClientState;
 use ibc::core::ics02_client::client_state::{
     ClientStateCommon, ClientStateExecution, ClientStateValidation, UpdateKind,
 };
@@ -24,12 +23,10 @@ use ibc::core::ics23_commitment::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
 use ibc::core::ics23_commitment::merkle::apply_prefix;
-use ibc::core::ics23_commitment::merkle::MerkleProof;
-use ibc::core::ics24_host::identifier::{ChainId, ClientId};
+use ibc::core::ics24_host::identifier::ClientId;
 use ibc::core::ics24_host::path::Path;
 use ibc::core::ics24_host::path::{ClientConsensusStatePath, ClientStatePath};
 use ibc::core::timestamp::Timestamp;
-use ibc::core::{ExecutionContext, ValidationContext};
 use ibc::Height;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v3::ClientState as RawSmClientState;
@@ -123,7 +120,24 @@ impl ClientStateCommon for ClientState {
         path: Path,
         value: Vec<u8>,
     ) -> Result<(), ClientError> {
-        todo!()
+        let (public_key, sig_data, timestamp, sequence) = self.produce_verification_args(proof)?;
+        let merkle_path = apply_prefix(prefix, vec![path.to_string()]);
+        if merkle_path.key_path.is_empty() {
+            return Err(ClientError::Other {
+                description: "path is empty".to_string(),
+            });
+        }
+        let sign_bytes = SignBytes {
+            sequence,
+            timestamp: timestamp.nanoseconds(),
+            diversifier: self.consensus_state.diversifier.clone(),
+            path: merkle_path,
+            data: value,
+        };
+        let sign_bz = sign_bytes.encode_vec();
+        verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
+            description: e.to_string(),
+        })
     }
 
     fn verify_non_membership(
@@ -133,7 +147,25 @@ impl ClientStateCommon for ClientState {
         _root: &CommitmentRoot,
         path: Path,
     ) -> Result<(), ClientError> {
-        todo!()
+        let (public_key, sig_data, timestamp, sequence) = self.produce_verification_args(proof)?;
+        let merkle_path = apply_prefix(prefix, vec![path.to_string()]);
+        if merkle_path.key_path.is_empty() {
+            return Err(ClientError::Other {
+                description: "path is empty".to_string(),
+            });
+        }
+        let sign_bytes = SignBytes {
+            sequence,
+            timestamp: timestamp.nanoseconds(),
+            diversifier: self.consensus_state.diversifier.clone(),
+            path: merkle_path,
+            data: vec![],
+        };
+        let sign_bz = sign_bytes.encode_vec();
+
+        verify_signature(public_key, sign_bz, sig_data).map_err(|e| ClientError::Other {
+            description: e.to_string(),
+        })
     }
 }
 
@@ -209,34 +241,20 @@ where
         client_id: &ClientId,
         header: Any,
     ) -> Result<Vec<Height>, ClientError> {
-        // let header = SmHeader::try_from(header)?;
-        // let header_height = header.height();
-
-        // let maybe_existing_consensus_state = {
-        //     let path_at_header_height = ClientConsensusStatePath::new(client_id, &header_height);
-
-        //     ctx.consensus_state(&path_at_header_height).ok()
-        // };
-
-        // if maybe_existing_consensus_state.is_some() {
-        //     // if we already had the header installed by a previous relayer
-        //     // then this is a no-op.
-        //     //
-        //     // Do nothing.
-        // } else {
-        //     let new_consensus_state = SmConsensusState::from(header.clone());
-        //     let new_client_state = self.clone().with_header(header)?;
-
-        //     ctx.store_consensus_state(
-        //         ClientConsensusStatePath::new(client_id, &new_client_state.latest_height()),
-        //         new_consensus_state.into(),
-        //     )?;
-        //     ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into())?;
-        // }
-
-        // let updated_heights = vec![header_height];
-        // Ok(updated_heights)
-        todo!()
+        let sm_header = SmHeader::try_from(header).map_err(|e| ClientError::Other {
+            description: format!("decode SmHeader Error({})", e),
+        })?;
+        let consensus_state = SmConsensusState::new(
+            sm_header.new_public_key,
+            sm_header.new_diversifier,
+            sm_header.timestamp,
+        );
+        let mut new_client_state = self.clone();
+        new_client_state.sequence.increment();
+        let new_height = new_client_state.sequence;
+        new_client_state.consensus_state = consensus_state;
+        ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into())?;
+        Ok(vec![new_height])
     }
 
     fn update_state_on_misbehaviour(
