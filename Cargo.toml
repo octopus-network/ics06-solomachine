@@ -37,7 +37,7 @@ default-features = false
 hex-literal = "0.4"
 
 [features]
-default = ["std", "v2"]
+default = ["std", "v3"]
 std = [
     "ibc/std",
     "ibc-proto/std",

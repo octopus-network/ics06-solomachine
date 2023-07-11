@@ -40,17 +40,6 @@ impl Display for Header {
     }
 }
 
-impl ibc::core::ics02_client::header::Header for Header {
-    fn height(&self) -> Height {
-        // todo(davirian), this can improve
-        Height::new(0, 9999).expect("never failed")
-    }
-
-    fn timestamp(&self) -> Timestamp {
-        self.timestamp
-    }
-}
-
 impl Protobuf<RawSmHeader> for Header {}
 
 impl TryFrom<RawSmHeader> for Header {

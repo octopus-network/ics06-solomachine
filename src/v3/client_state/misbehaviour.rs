@@ -5,6 +5,7 @@ use crate::v3::header::Header as SmHeader;
 use crate::v3::misbehaviour::Misbehaviour as SmMisbehaviour;
 use crate::v3::proof::types::sign_bytes::SignBytes;
 use crate::v3::proof::verify_signature;
+use crate::v3::ValidationContext as SmValidationContext;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;
 use ibc::core::{ics24_host::identifier::ClientId, ValidationContext};
@@ -15,12 +16,15 @@ use super::ClientState;
 impl ClientState {
     // verify_misbehaviour determines whether or not two conflicting headers at
     // the same height would have convinced the light client.
-    pub fn verify_misbehaviour(
+    pub fn verify_misbehaviour<ClientValidationContext>(
         &self,
-        _ctx: &dyn ValidationContext,
+        _ctx: &ClientValidationContext,
         _client_id: &ClientId,
         misbehaviour: SmMisbehaviour,
-    ) -> Result<(), ClientError> {
+    ) -> Result<(), ClientError>
+    where
+        ClientValidationContext: SmValidationContext,
+    {
         // NOTE: a check that the misbehaviour message data are not equal is done by
         // misbehaviour.ValidateBasic which is called by the 02-client keeper.
         // verify first signature

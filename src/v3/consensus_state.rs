@@ -70,6 +70,16 @@ impl ibc::core::ics02_client::consensus_state::ConsensusState for ConsensusState
     fn timestamp(&self) -> Timestamp {
         self.timestamp
     }
+
+    /// Serializes the `ConsensusState`. This is expected to be implemented as
+    /// first converting to the raw type (i.e. the protobuf definition), and then
+    /// serializing that.
+    ///
+    /// Note that the `Protobuf` trait in `tendermint-proto` provides convenience methods
+    /// to do this automatically.
+    fn encode_vec(&self) -> Result<Vec<u8>, tendermint_proto::Error> {
+        Ok(<Self as Protobuf<Any>>::encode_vec(self))
+    }
 }
 
 impl Protobuf<RawSmConsensusState> for ConsensusState {}
