@@ -33,7 +33,7 @@ pub struct ConsensusState {
 impl ConsensusState {
     pub fn new(public_key: PublicKey, diversifier: String, timestamp: Timestamp) -> Self {
         Self {
-            public_key: public_key.clone(),
+            public_key,
             diversifier,
             timestamp,
             root: CommitmentRoot::from(public_key.to_bytes()),
