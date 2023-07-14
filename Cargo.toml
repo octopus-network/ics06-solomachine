@@ -37,7 +37,7 @@ default-features = false
 hex-literal = "0.4"
 
 [features]
-default = ["std", "v3"]
+default = ["std", "v2"]
 std = [
     "ibc/std",
     "ibc-proto/std",
@@ -55,5 +55,5 @@ v3 = []
 
 [patch.crates-io]
 # commit is : Update ibc-proto dep
-ibc = { git = "https://github.com/octopus-network/ibc-rs.git", branch = "main" }
-ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "full-cosmos-type-v0.32" }
+ibc = { git = "https://github.com/octopus-network/ibc-rs.git", branch = "octopus-relayer-v0.42.0" }
+ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "octopus-relayer-v0.32.0" }

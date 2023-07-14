@@ -77,8 +77,8 @@ impl ibc::core::ics02_client::consensus_state::ConsensusState for ConsensusState
     ///
     /// Note that the `Protobuf` trait in `tendermint-proto` provides convenience methods
     /// to do this automatically.
-    fn encode_vec(&self) -> Result<Vec<u8>, tendermint_proto::Error> {
-        Ok(<Self as Protobuf<Any>>::encode_vec(self))
+    fn encode_vec(&self) -> Vec<u8> {
+        <Self as Protobuf<Any>>::encode_vec(self)
     }
 }
 
