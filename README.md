@@ -14,5 +14,4 @@ v3: reference to ibc-go main [ics06-solo-machine-client](https://github.com/cosm
 
 ## issue
 
-- implement ibc::core::ics02_client::header::Header trait  height function, because ics06 solomachine client Header have not height feilds.
-- ics06 solomachine client consensus state don't have CommitmentRoot field, current just add for ics06 solomachine client consensus state a temp root(CommitmentRoot) field.
+- ics06 solomachine client consensus state don't have CommitmentRoot field, current just add for ics06 solomachine client consensus state a temp root(CommitmentRoot) field and give value is publicKey Bytes.
