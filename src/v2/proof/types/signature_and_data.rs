@@ -10,6 +10,7 @@ pub const SOLOMACHINE_SIGNATURE_AND_DATA_TYPE_URL: &str =
 
 /// SignatureAndData contains a signature and the data signed over to create that
 /// signature.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, PartialEq)]
 pub struct SignatureAndData {
     pub signature: Vec<u8>,

@@ -46,7 +46,8 @@ pub const SOLOMACHINE_CLIENT_STATE_TYPE_URL: &str = "/ibc.lightclients.solomachi
 
 /// ClientState defines a solo machine client that tracks the current consensus
 /// state and if the client is frozen.
-#[derive(serde::Serialize, serde::Deserialize, Clone, PartialEq, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, PartialEq, Debug)]
 pub struct ClientState {
     /// latest sequence of the client state
     pub sequence: Height,

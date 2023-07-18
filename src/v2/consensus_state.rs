@@ -17,7 +17,8 @@ pub const SOLOMACHINE_CONSENSUS_STATE_TYPE_URL: &str =
 /// ConsensusState defines a solo machine consensus state. The sequence of a
 /// consensus state is contained in the "height" key used in storing the
 /// consensus state.
-#[derive(serde::Serialize, serde::Deserialize, Clone, PartialEq, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, PartialEq, Debug)]
 pub struct ConsensusState {
     /// public key of the solo machine
     pub public_key: PublicKey,

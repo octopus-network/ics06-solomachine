@@ -13,7 +13,8 @@ use prost::Message;
 pub const SOLOMACHINE_HEADER_TYPE_URL: &str = "/ibc.lightclients.solomachine.v2.Header";
 
 /// Header defines a solo machine consensus header
-#[derive(serde::Serialize, serde::Deserialize, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, PartialEq)]
 pub struct Header {
     /// sequence to update solo machine public key at
     pub sequence: Height,

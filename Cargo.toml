@@ -37,7 +37,7 @@ default-features = false
 hex-literal = "0.4"
 
 [features]
-default = ["std", "v2"]
+default = ["std", "v3", "serde"]
 std = [
     "ibc/std",
     "ibc-proto/std",
@@ -52,6 +52,7 @@ std = [
 ]
 v2 = []
 v3 = []
+serde = ["serde/std", "serde_json/std", "ibc/serde"]
 
 [patch.crates-io]
 # commit is : Update ibc-proto dep
