@@ -8,7 +8,7 @@ use ibc_proto::google::protobuf::Any;
 use prost::Message;
 
 /// Protobuf [`Any`] type URL for [`LegacyAminoMultisig`].
-const LEGACY_AMINO_MULTISIG_TYPE_URL: &str = "/cosmos.crypto.multisig.LegacyAminoPubKey";
+pub const LEGACY_AMINO_MULTISIG_TYPE_URL: &str = "/cosmos.crypto.multisig.LegacyAminoPubKey";
 
 /// Legacy Amino multisig key.
 #[derive(Clone, Debug, Eq, PartialEq)]
