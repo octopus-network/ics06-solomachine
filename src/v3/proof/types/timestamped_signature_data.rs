@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use crate::v3::error::Error;
-use crate::v3::proof::types::signature_and_data::SignatureAndData;
 use ibc::core::timestamp::Timestamp;
+use ibc_proto::cosmos::tx::signing::v1beta1::signature_descriptor;
 use ibc_proto::ibc::lightclients::solomachine::v3::TimestampedSignatureData as RawTimestampedSignatureData;
 use ibc_proto::protobuf::Protobuf;
 
@@ -9,7 +9,7 @@ use ibc_proto::protobuf::Protobuf;
 /// signature.
 #[derive(Clone, PartialEq)]
 pub struct TimestampedSignatureData {
-    pub signature_data: SignatureAndData,
+    pub signature_data: signature_descriptor::Data,
     pub timestamp: Timestamp,
 }
 
@@ -20,7 +20,7 @@ impl TryFrom<RawTimestampedSignatureData> for TimestampedSignatureData {
 
     fn try_from(raw: RawTimestampedSignatureData) -> Result<Self, Self::Error> {
         Ok(Self {
-            signature_data: SignatureAndData::decode_vec(&raw.signature_data)
+            signature_data: prost::Message::decode(raw.signature_data.as_slice())
                 .map_err(|e| Error::Other(format!("decode SignatureAndData Error({})", e)))?,
             timestamp: Timestamp::from_nanoseconds(raw.timestamp).map_err(Error::ParseTimeError)?,
         })
@@ -29,8 +29,11 @@ impl TryFrom<RawTimestampedSignatureData> for TimestampedSignatureData {
 
 impl From<TimestampedSignatureData> for RawTimestampedSignatureData {
     fn from(value: TimestampedSignatureData) -> Self {
+        let mut sig = Vec::new();
+        prost::Message::encode(&value.signature_data, &mut sig)
+            .expect("encode TimestampedSignatureData");
         Self {
-            signature_data: value.signature_data.encode_vec(),
+            signature_data: sig,
             timestamp: value.timestamp.nanoseconds(),
         }
     }

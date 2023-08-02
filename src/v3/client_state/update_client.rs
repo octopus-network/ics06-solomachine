@@ -3,12 +3,11 @@ use crate::prelude::*;
 use crate::v3::header::Header as SmHeader;
 use crate::v3::proof::types::header_data::HeaderData;
 use crate::v3::proof::types::sign_bytes::SignBytes;
-use crate::v3::proof::types::signature_and_data::SignatureAndData;
 use crate::v3::proof::verify_signature;
 use crate::v3::ValidationContext as SmValidationContext;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::ics24_host::identifier::ClientId;
-use ibc_proto::ibc::core::commitment::v1::MerklePath;
+use ibc_proto::cosmos::tx::signing::v1beta1::signature_descriptor;
 use ibc_proto::protobuf::Protobuf;
 
 impl ClientState {
@@ -39,7 +38,7 @@ impl ClientState {
         let data_bz = header_data.encode_vec();
 
         let sign_bytes = SignBytes {
-            sequence: self.sequence.revision_height(),
+            sequence: self.sequence,
             timestamp: header.timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
             // todo(davirain)
@@ -47,16 +46,24 @@ impl ClientState {
             // SentinelHeaderPath defines a placeholder path value used for headers in solomachine client updates
             // const SentinelHeaderPath = "solomachine:header"
             // ref: https://github.com/cosmos/ibc-go/blob/3765dfc3b89b16c81abcc3e0b1ad5823d7f7eaa0/modules/light-clients/06-solomachine/update.go#L48
-            path: MerklePath {
-                key_path: vec!["solomachine:header".to_string()],
-            },
+            path: "solomachine:header".to_string().into_bytes(),
             data: data_bz,
         };
         let data = sign_bytes.encode_vec();
-        let sig_data =
-            SignatureAndData::decode_vec(&header.signature).map_err(|_| ClientError::Other {
-                description: "failed to decode SignatureData".into(),
+        let sig_des_data: signature_descriptor::Data =
+            prost::Message::decode(header.signature.as_slice()).map_err(|_| {
+                ClientError::Other {
+                    description: "failed to decode SignatureData".into(),
+                }
             })?;
+        let sig_data = match sig_des_data.sum {
+            Some(signature_descriptor::data::Sum::Single(single)) => single.signature,
+            _ => {
+                return Err(ClientError::Other {
+                    description: "SignatureData is not a single signature".into(),
+                })
+            }
+        };
 
         let public_key = self.consensus_state.public_key();
 

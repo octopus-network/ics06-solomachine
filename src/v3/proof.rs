@@ -1,7 +1,6 @@
 use crate::cosmos::crypto::PublicKey;
 use crate::prelude::*;
 use crate::v3::error::Error;
-use crate::v3::proof::types::signature_and_data::SignatureAndData;
 use tendermint::crypto::signature::Verifier;
 use tendermint::Signature;
 
@@ -16,10 +15,9 @@ pub mod types;
 pub fn verify_signature(
     publik_key: PublicKey,
     sign_bytes: Vec<u8>,
-    signature_and_data: SignatureAndData,
+    sig_data: Vec<u8>,
 ) -> Result<(), Error> {
-    let signature = Signature::try_from(signature_and_data.signature)
-        .map_err(|e| Error::Other(format!("{}", e)))?;
+    let signature = Signature::try_from(sig_data).map_err(|e| Error::Other(format!("{}", e)))?;
     tendermint::crypto::default::signature::Verifier::verify(
         publik_key.into(),
         &sign_bytes,

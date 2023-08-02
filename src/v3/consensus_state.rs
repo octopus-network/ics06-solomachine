@@ -97,7 +97,7 @@ impl TryFrom<RawSmConsensusState> for ConsensusState {
             public_key,
             diversifier: raw.diversifier,
             timestamp,
-            root: CommitmentRoot::from(vec![]),
+            root: CommitmentRoot::from(public_key.to_bytes()),
         })
     }
 }

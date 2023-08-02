@@ -1,7 +1,6 @@
 use crate::prelude::*;
 use crate::v3::error::Error;
 use ibc::core::timestamp::Timestamp;
-use ibc_proto::ibc::core::commitment::v1::MerklePath;
 use ibc_proto::ibc::lightclients::solomachine::v3::SignatureAndData as RawSignatureAndData;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
@@ -12,7 +11,7 @@ use prost::Message;
 #[derive(Clone, PartialEq)]
 pub struct SignatureAndData {
     pub signature: Vec<u8>,
-    pub path: MerklePath,
+    pub path: Vec<u8>,
     pub data: Vec<u8>,
     pub timestamp: Timestamp,
 }
@@ -36,8 +35,7 @@ impl TryFrom<RawSignatureAndData> for SignatureAndData {
         let data = raw.data;
         let timestamp =
             Timestamp::from_nanoseconds(raw.timestamp).map_err(Error::ParseTimeError)?;
-        let path = MerklePath::decode(raw.path.as_ref())
-            .map_err(|e| Error::Other(format!("decode MerklePath Failed({})", e)))?;
+        let path = raw.path;
         Ok(Self {
             signature,
             path,

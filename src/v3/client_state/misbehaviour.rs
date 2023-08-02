@@ -9,6 +9,7 @@ use crate::v3::ValidationContext as SmValidationContext;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::ics24_host::identifier::ClientId;
 use ibc::core::timestamp::Timestamp;
+use ibc_proto::cosmos::tx::signing::v1beta1::signature_descriptor;
 use ibc_proto::protobuf::Protobuf;
 
 use super::ClientState;
@@ -58,14 +59,24 @@ impl ClientState {
         };
         let data = sign_bytes.encode_vec();
 
-        let signature_and_data = SignatureAndData::decode_vec(&signature_and_data.signature)
-            .map_err(|_| ClientError::Other {
-                description: "failed to decode SignatureData".into(),
+        let sig_des_data: signature_descriptor::Data =
+            prost::Message::decode(signature_and_data.signature.as_slice()).map_err(|_| {
+                ClientError::Other {
+                    description: "failed to decode SignatureData".into(),
+                }
             })?;
+        let sig_data = match sig_des_data.sum {
+            Some(signature_descriptor::data::Sum::Single(single)) => single.signature,
+            _ => {
+                return Err(ClientError::Other {
+                    description: "SignatureData is not a single signature".into(),
+                })
+            }
+        };
 
         let public_key = self.consensus_state.public_key();
 
-        verify_signature(public_key, data, signature_and_data).map_err(|e| ClientError::Other {
+        verify_signature(public_key, data, sig_data).map_err(|e| ClientError::Other {
             description: e.to_string(),
         })
     }

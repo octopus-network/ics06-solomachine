@@ -22,12 +22,12 @@ use ibc::core::ics02_client::ClientExecutionContext;
 use ibc::core::ics23_commitment::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
-use ibc::core::ics23_commitment::merkle::apply_prefix;
 use ibc::core::ics24_host::identifier::ClientId;
 use ibc::core::ics24_host::path::Path;
 use ibc::core::ics24_host::path::{ClientConsensusStatePath, ClientStatePath};
 use ibc::core::timestamp::Timestamp;
 use ibc::Height;
+use ibc_proto::cosmos::tx::signing::v1beta1::signature_descriptor::data::Sum;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v3::ClientState as RawSmClientState;
 use ibc_proto::protobuf::Protobuf;
@@ -44,7 +44,7 @@ pub const SOLOMACHINE_CLIENT_STATE_TYPE_URL: &str = "/ibc.lightclients.solomachi
 #[derive(Clone, PartialEq, Debug)]
 pub struct ClientState {
     /// latest sequence of the client state
-    pub sequence: Height,
+    pub sequence: u64,
     /// frozen sequence of the solo machine
     pub is_frozen: bool,
     pub consensus_state: SmConsensusState,
@@ -122,8 +122,10 @@ impl ClientStateCommon for ClientState {
         value: Vec<u8>,
     ) -> Result<(), ClientError> {
         let (public_key, sig_data, timestamp, sequence) = self.produce_verification_args(proof)?;
-        let merkle_path = apply_prefix(prefix, vec![path.to_string()]);
-        if merkle_path.key_path.is_empty() {
+        let mut full_path = Vec::<u8>::new();
+        full_path.extend_from_slice(prefix.as_bytes());
+        full_path.extend(path.into_bytes());
+        if full_path.len() == 0 {
             return Err(ClientError::Other {
                 description: "path is empty".to_string(),
             });
@@ -132,7 +134,7 @@ impl ClientStateCommon for ClientState {
             sequence,
             timestamp: timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
-            path: merkle_path,
+            path: full_path,
             data: value,
         };
         let sign_bz = sign_bytes.encode_vec();
@@ -149,8 +151,10 @@ impl ClientStateCommon for ClientState {
         path: Path,
     ) -> Result<(), ClientError> {
         let (public_key, sig_data, timestamp, sequence) = self.produce_verification_args(proof)?;
-        let merkle_path = apply_prefix(prefix, vec![path.to_string()]);
-        if merkle_path.key_path.is_empty() {
+        let mut full_path = Vec::<u8>::new();
+        full_path.extend_from_slice(prefix.as_bytes());
+        full_path.extend(path.into_bytes());
+        if full_path.len() == 0 {
             return Err(ClientError::Other {
                 description: "path is empty".to_string(),
             });
@@ -159,7 +163,7 @@ impl ClientStateCommon for ClientState {
             sequence,
             timestamp: timestamp.nanoseconds(),
             diversifier: self.consensus_state.diversifier.clone(),
-            path: merkle_path,
+            path: full_path,
             data: vec![],
         };
         let sign_bz = sign_bytes.encode_vec();
@@ -251,10 +255,14 @@ where
             sm_header.timestamp,
         );
         let mut new_client_state = self.clone();
-        new_client_state.sequence.increment();
-        let new_height = new_client_state.sequence;
-        new_client_state.consensus_state = consensus_state;
+        new_client_state.sequence += 1;
+        let new_height = new_client_state.latest_height();
+        new_client_state.consensus_state = consensus_state.clone();
         ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into())?;
+        ctx.store_consensus_state(
+            ClientConsensusStatePath::new(client_id, &new_height),
+            consensus_state.into(),
+        )?;
         Ok(vec![new_height])
     }
 
@@ -288,7 +296,7 @@ where
 
 impl ClientState {
     /// Create a new ClientState Instance.
-    pub fn new(sequence: Height, is_frozen: bool, consensus_state: SmConsensusState) -> Self {
+    pub fn new(sequence: u64, is_frozen: bool, consensus_state: SmConsensusState) -> Self {
         Self {
             sequence,
             is_frozen,
@@ -305,7 +313,7 @@ impl ClientState {
 
     pub fn with_frozen_height(self, h: Height) -> Self {
         Self {
-            sequence: h,
+            sequence: h.revision_height(),
             ..self
         }
     }
@@ -313,7 +321,7 @@ impl ClientState {
     /// Return exported.Height to satisfy ClientState interface
     /// Revision number is always 0 for a solo-machine.
     pub fn latest_height(&self) -> Height {
-        self.sequence
+        Height::new(0, self.sequence).unwrap()
     }
 
     // GetTimestampAtHeight returns the timestamp in nanoseconds of the consensus state at the given height.
@@ -323,7 +331,7 @@ impl ClientState {
 
     // Validate performs basic validation of the client state fields.
     pub fn valida_basic(&self) -> Result<(), Error> {
-        if self.sequence.revision_height() == 0 {
+        if self.sequence == 0 {
             return Err(Error::SequenceCannotZero);
         }
         self.consensus_state.valida_basic()
@@ -335,7 +343,7 @@ impl ClientState {
     pub fn produce_verification_args(
         &self,
         proof: &CommitmentProofBytes,
-    ) -> Result<(PublicKey, SignatureAndData, Timestamp, u64), Error> {
+    ) -> Result<(PublicKey, Vec<u8>, Timestamp, u64), Error> {
         let proof = Vec::<u8>::from(proof.clone());
         if proof.is_empty() {
             return Err(Error::Other("proof cannot be empty".into()));
@@ -347,9 +355,16 @@ impl ClientState {
                 e
             ))
         })?;
-
+        let sig_data = match timestamped_sig_data.signature_data.sum {
+            Some(sum) => match sum {
+                Sum::Single(single) => single.signature,
+                Sum::Multi(_) => {
+                    return Err(Error::Other("proof must contain a single signature".into()))
+                }
+            },
+            _ => return Err(Error::Other("proof must contain a single signature".into())),
+        };
         let timestamp = timestamped_sig_data.timestamp;
-        let signature_and_data = timestamped_sig_data.signature_data;
 
         if self.consensus_state.timestamp > timestamp {
             return Err(Error::Other(format!(
@@ -358,9 +373,8 @@ impl ClientState {
             )));
         }
 
-        let latest_sequence = self.sequence.revision_height();
         let public_key = self.consensus_state.public_key();
-        Ok((public_key, signature_and_data, timestamp, latest_sequence))
+        Ok((public_key, sig_data, timestamp, self.sequence))
     }
 }
 
@@ -370,14 +384,13 @@ impl TryFrom<RawSmClientState> for ClientState {
     type Error = Error;
 
     fn try_from(raw: RawSmClientState) -> Result<Self, Self::Error> {
-        let sequence = Height::new(0, raw.sequence).map_err(Error::InvalidHeight)?;
         let consensus_state: SmConsensusState = raw
             .consensus_state
             .ok_or(Error::ConsensusStateIsEmpty)?
             .try_into()?;
 
         Ok(Self {
-            sequence,
+            sequence: raw.sequence,
             is_frozen: raw.is_frozen,
             consensus_state,
         })
@@ -387,7 +400,7 @@ impl TryFrom<RawSmClientState> for ClientState {
 impl From<ClientState> for RawSmClientState {
     fn from(value: ClientState) -> Self {
         Self {
-            sequence: value.sequence.revision_height(),
+            sequence: value.sequence,
             is_frozen: value.is_frozen,
             consensus_state: Some(value.consensus_state.into()),
         }
