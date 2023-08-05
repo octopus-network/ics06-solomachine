@@ -56,5 +56,5 @@ serde = ["serde/std", "serde_json/std", "ibc/serde"]
 
 [patch.crates-io]
 # commit is : Update ibc-proto dep
-ibc = { git = "https://github.com/octopus-network/ibc-rs.git", branch = "octopus-relayer-v0.42.0" }
-ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "octopus-relauer-v0.32.0-with-ics12-near" }
+ibc = { git = "https://github.com/octopus-network/ibc-rs.git", branch = "v0.42.0-julian" }
+ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "v0.32.0-julian" }

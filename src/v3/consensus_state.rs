@@ -8,6 +8,7 @@ use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v3::ConsensusState as RawSmConsensusState;
 use ibc_proto::protobuf::Protobuf;
 use prost::Message;
+use tendermint_proto::Error as TmProtoError;
 
 pub const SOLOMACHINE_CONSENSUS_STATE_TYPE_URL: &str =
     "/ibc.lightclients.solomachine.v3.ConsensusState";
@@ -78,8 +79,8 @@ impl ibc::core::ics02_client::consensus_state::ConsensusState for ConsensusState
     ///
     /// Note that the `Protobuf` trait in `tendermint-proto` provides convenience methods
     /// to do this automatically.
-    fn encode_vec(&self) -> Vec<u8> {
-        <Self as Protobuf<Any>>::encode_vec(self)
+    fn encode_vec(&self) -> Result<Vec<u8>, TmProtoError> {
+        Ok(<Self as Protobuf<Any>>::encode_vec(self))
     }
 }
 
