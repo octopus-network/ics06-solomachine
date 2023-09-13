@@ -12,6 +12,7 @@ use crate::v3::proof::types::sign_bytes::SignBytes;
 use crate::v3::proof::types::signature_and_data::SignatureAndData;
 use crate::v3::proof::types::timestamped_signature_data::TimestampedSignatureData;
 use crate::v3::proof::verify_signature;
+use ibc::core::ics02_client::client_state::Status;
 use ibc::core::ics02_client::client_state::{
     ClientStateCommon, ClientStateExecution, ClientStateValidation, UpdateKind,
 };
@@ -78,20 +79,6 @@ impl ClientStateCommon for ClientState {
             });
         }
         Ok(())
-    }
-
-    fn confirm_not_frozen(&self) -> Result<(), ClientError> {
-        if self.is_frozen {
-            return Err(ClientError::ClientFrozen {
-                description: "the client is frozen".into(),
-            });
-        }
-        Ok(())
-    }
-
-    fn expired(&self, _elapsed: Duration) -> bool {
-        // todo(davirian)
-        false
     }
 
     /// Perform client-specific verifications and check all data in the new
@@ -210,6 +197,43 @@ where
                 self.check_for_misbehaviour_misbehavior(&misbehaviour)
             }
         }
+    }
+
+    fn status(
+        &self,
+        _ctx: &ClientValidationContext,
+        _client_id: &ClientId,
+    ) -> Result<Status, ClientError> {
+        if self.is_frozen {
+            return Ok(Status::Frozen);
+        }
+
+        // let latest_consensus_state: SmConsensusState = {
+        //     let any_latest_consensus_state = match ctx
+        //         .consensus_state(&ClientConsensusStatePath::new(client_id, &self.sequence))
+        //     {
+        //         Ok(cs) => cs,
+        //         // if the client state does not have an associated consensus state for its latest height
+        //         // then it must be expired
+        //         Err(_) => return Ok(Status::Expired),
+        //     };
+
+        //     any_latest_consensus_state.try_into()?
+        // };
+
+        // Note: if the `duration_since()` is `None`, indicating that the latest
+        // consensus state is in the future, then we don't consider the client
+        // to be expired.
+        // let now = ctx.host_timestamp()?;
+        // if let Some(elapsed_since_latest_consensus_state) =
+        //     now.duration_since(&latest_consensus_state.timestamp())
+        // {
+        //     if elapsed_since_latest_consensus_state > self.consensus_state.timestamp.into() {
+        //         return Ok(Status::Expired);
+        //     }
+        // }
+
+        Ok(Status::Active)
     }
 }
 

@@ -1,6 +1,6 @@
 [package]
 name = "ics06-solomachine"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 keywords     = ["solomachine", "ics06", "cosmos", "ibc"]
 repository   = "https://github.com/octopus-network/ics06-solomachine.git"
@@ -12,8 +12,8 @@ description  = """
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ibc = { version = "0.42.0", features = ["parity-scale-codec", "borsh"], default-features = false }
-ibc-proto = { version = "0.32.0", features = ["parity-scale-codec", "borsh"], default-features = false }
+ibc = { version = "0.44.1", features = ["parity-scale-codec", "borsh"], default-features = false }
+ibc-proto = { version = "0.34.1", features = ["parity-scale-codec", "borsh", "serde"], default-features = false }
 prost = { version = "0.11", default-features = false }
 displaydoc = { version = "0.2", default-features = false }
 bytes = { version = "1.2.1", default-features = false }
@@ -25,12 +25,12 @@ subtle-encoding = { version = "0.5", default-features = false }
 
 
 [dependencies.tendermint]
-version = "0.32"
+version = "0.33"
 default-features = false
 features = ["secp256k1", "rust-crypto"]
 
 [dependencies.tendermint-proto]
-version = "0.32"
+version = "0.33"
 default-features = false
 
 [dev-dependencies]
@@ -56,5 +56,5 @@ serde = ["serde/std", "serde_json/std", "ibc/serde"]
 
 [patch.crates-io]
 # commit is : Update ibc-proto dep
-ibc = { git = "https://github.com/octopus-network/ibc-rs.git", branch = "octopus-relayer-v0.42.0" }
-ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "octopus-relauer-v0.32.0-with-ics12-near" }
+ibc = { git = "https://github.com/octopus-network/ibc-rs.git", branch = "octopus-relayer" }
+ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "octopus-relayer" }
