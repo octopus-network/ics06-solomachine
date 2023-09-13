@@ -2,16 +2,16 @@ use super::{
     client_type as sm_client_type, ExecutionContext as SmExecutionContext,
     ValidationContext as SmValidationContext,
 };
+use crate::consensus_state::ConsensusState as SmConsensusState;
 use crate::cosmos::crypto::PublicKey;
+use crate::error::Error;
+use crate::header::Header as SmHeader;
+use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
 use crate::prelude::*;
-use crate::v3::consensus_state::ConsensusState as SmConsensusState;
-use crate::v3::error::Error;
-use crate::v3::header::Header as SmHeader;
-use crate::v3::misbehaviour::Misbehaviour as SmMisbehaviour;
-use crate::v3::proof::types::sign_bytes::SignBytes;
-use crate::v3::proof::types::signature_and_data::SignatureAndData;
-use crate::v3::proof::types::timestamped_signature_data::TimestampedSignatureData;
-use crate::v3::proof::verify_signature;
+use crate::proof::types::sign_bytes::SignBytes;
+use crate::proof::types::signature_and_data::SignatureAndData;
+use crate::proof::types::timestamped_signature_data::TimestampedSignatureData;
+use crate::proof::verify_signature;
 use ibc::core::ics02_client::client_state::Status;
 use ibc::core::ics02_client::client_state::{
     ClientStateCommon, ClientStateExecution, ClientStateValidation, UpdateKind,

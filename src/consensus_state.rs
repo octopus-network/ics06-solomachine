@@ -1,6 +1,6 @@
 use crate::cosmos::crypto::PublicKey;
+use crate::error::Error;
 use crate::prelude::*;
-use crate::v3::error::Error;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::ics23_commitment::commitment::CommitmentRoot;
 use ibc::core::timestamp::Timestamp;

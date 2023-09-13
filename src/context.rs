@@ -1,5 +1,5 @@
+use super::consensus_state::ConsensusState as SmConsensusState;
 use alloc::string::ToString;
-
 use ibc::{
     core::{
         ics02_client::ClientExecutionContext,
@@ -9,8 +9,6 @@ use ibc::{
     },
     Height,
 };
-
-use super::consensus_state::ConsensusState as SmConsensusState;
 
 /// Client's context required during both validation and execution
 pub trait CommonContext {

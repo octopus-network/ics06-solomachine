@@ -1,7 +1,7 @@
 use crate::cosmos::crypto::PublicKey;
+use crate::error::Error;
 use crate::prelude::*;
-use crate::v3::error::Error;
-use crate::v3::proof::types::signature_and_data::SignatureAndData;
+use crate::proof::types::signature_and_data::SignatureAndData;
 use tendermint::crypto::signature::Verifier;
 use tendermint::Signature;
 

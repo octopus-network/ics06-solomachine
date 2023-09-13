@@ -1,6 +1,6 @@
 use crate::cosmos::crypto::PublicKey;
+use crate::error::Error;
 use crate::prelude::*;
-use crate::v3::error::Error;
 use bytes::Buf;
 use ibc::core::ics02_client::error::ClientError;
 use ibc::core::timestamp::Timestamp;

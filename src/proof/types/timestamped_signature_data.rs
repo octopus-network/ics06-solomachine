@@ -1,6 +1,6 @@
+use crate::error::Error;
 use crate::prelude::*;
-use crate::v3::error::Error;
-use crate::v3::proof::types::signature_and_data::SignatureAndData;
+use crate::proof::types::signature_and_data::SignatureAndData;
 use ibc::core::timestamp::Timestamp;
 use ibc_proto::ibc::lightclients::solomachine::v3::TimestampedSignatureData as RawTimestampedSignatureData;
 use ibc_proto::protobuf::Protobuf;
