@@ -50,7 +50,6 @@ std = [
     "tendermint/std",
     "subtle-encoding/std",
 ]
-v2 = []
 v3 = []
 serde = ["serde/std", "serde_json/std", "ibc/serde"]
 
