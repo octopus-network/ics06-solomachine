@@ -1,10 +1,10 @@
 //! Public keys
 
 use crate::cosmos::error::Error;
+use crate::cosmos::raw_proto::ed25519::PubKey as Ed25519PubKey;
+use crate::cosmos::raw_proto::secp256k1::PubKey as Secp256k1PubKey;
 use crate::prelude::*;
 use alloc::string::ToString;
-use ibc_proto::cosmos::crypto::ed25519::PubKey as Ed25519PubKey;
-use ibc_proto::cosmos::crypto::secp256k1::PubKey as Secp256k1PubKey;
 use ibc_proto::google::protobuf::Any;
 use prost::Message;
 use serde::{Deserialize, Serialize};

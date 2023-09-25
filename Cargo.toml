@@ -52,8 +52,3 @@ std = [
 ]
 v3 = []
 serde = ["serde/std", "serde_json/std", "ibc/serde"]
-
-[patch.crates-io]
-# commit is : Update ibc-proto dep
-ibc = { git = "https://github.com/octopus-network/ibc-rs.git", branch = "octopus-relayer" }
-ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "octopus-relayer" }
