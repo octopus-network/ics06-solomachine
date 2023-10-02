@@ -32,7 +32,7 @@ default-features = false
 features = ["secp256k1", "rust-crypto"]
 
 [dependencies.tendermint-proto]
-version = "0.33"
+version = "0.34"
 default-features = false
 
 [dev-dependencies]
