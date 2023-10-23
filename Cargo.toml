@@ -15,7 +15,7 @@ description  = """
 
 [dependencies]
 ibc = { version = "0.45.0", features = ["parity-scale-codec", "borsh"], default-features = false }
-ibc-proto = { version = "0.35", features = ["parity-scale-codec", "borsh", "serde"], default-features = false }
+ibc-proto = { version = "0.38", features = ["parity-scale-codec", "borsh", "serde"], default-features = false }
 prost = { version = "0.11", default-features = false }
 displaydoc = { version = "0.2", default-features = false }
 bytes = { version = "1.2.1", default-features = false }
