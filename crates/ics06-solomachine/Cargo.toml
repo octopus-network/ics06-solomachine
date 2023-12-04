@@ -18,12 +18,7 @@ ibc-proto = { workspace = true }
 ibc-client-solomachine-types = { workspace = true }
 
 prost = { workspace = true  }
-displaydoc = { workspace = true }
-bytes = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-k256 = { workspace = true }
-subtle-encoding = { workspace = true }
+serde = { workspace = true, optional = true }
 
 tendermint = { workspace = true }
 tendermint-proto = { workspace = true }
@@ -31,20 +26,32 @@ tendermint-proto = { workspace = true }
 [dev-dependencies]
 hex-literal = "0.4"
 
+
 [features]
-default = ["std", "v3", "serde"]
+default = ["std"]
 std = [
-    "ibc-core/std",
-    "ibc-client-solomachine-types/std",
-    "ibc-proto/std",
     "prost/std",
-    "displaydoc/std",
-    "bytes/std",
     "serde/std",
-    "serde_json/std",
-    "k256/std",
+    "ibc-client-solomachine-types/std",
+    "ibc-core/std",
     "tendermint/std",
-    "subtle-encoding/std",
 ]
-v3 = []
-serde = ["serde/std"]
+serde = [
+    "dep:serde",
+    "ibc-client-solomachine-types/serde",
+    "ibc-core/serde",
+]
+schema = [
+    "ibc-client-solomachine-types/schema",
+    "ibc-core/schema",
+    "serde",
+    "std"
+]
+borsh = [
+    "ibc-client-solomachine-types/borsh",
+    "ibc-core/borsh",
+]
+parity-scale-codec = [
+    "ibc-client-solomachine-types/parity-scale-codec",
+    "ibc-core/parity-scale-codec",
+]
