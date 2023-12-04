@@ -122,6 +122,6 @@ fn test_header_der_ser() {
     let any_header = Any::from(temp_header);
     let encode_any_header = any_header.encode_to_vec();
     let decode_any_header = Any::decode(encode_any_header.as_ref()).unwrap();
-    println!("decode_any_header = {:?}", decode_any_header);
+    // println!("decode_any_header = {:?}", decode_any_header);
     assert_eq!(decode_any_header, any_header);
 }

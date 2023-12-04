@@ -1,6 +1,8 @@
 use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
 use crate::proof::types::signature_and_data::SignatureAndData;
+use alloc::format;
+use alloc::vec::Vec;
 use tendermint::crypto::signature::Verifier;
 use tendermint::Signature;
 

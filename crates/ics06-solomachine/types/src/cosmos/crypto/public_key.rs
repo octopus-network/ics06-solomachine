@@ -3,8 +3,12 @@
 use crate::cosmos::error::Error;
 use crate::cosmos::raw_proto::ed25519::PubKey as Ed25519PubKey;
 use crate::cosmos::raw_proto::secp256k1::PubKey as Secp256k1PubKey;
+use alloc::borrow::ToOwned;
+use alloc::format;
 use alloc::str::FromStr;
+use alloc::string::String;
 use alloc::string::ToString;
+use alloc::vec::Vec;
 use ibc_proto::google::protobuf::Any;
 use prost::Message;
 use serde::{Deserialize, Serialize};

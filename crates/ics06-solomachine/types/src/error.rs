@@ -1,3 +1,5 @@
+use alloc::string::String;
+use alloc::string::ToString;
 use displaydoc::Display;
 use ibc_core::channel::types::error::ChannelError;
 use ibc_core::client::types::error::ClientError;
@@ -58,6 +60,6 @@ impl From<Error> for ClientError {
     }
 }
 
-pub(crate) trait IntoResult<T, E> {
+pub trait IntoResult<T, E> {
     fn into_result(self) -> Result<T, E>;
 }

@@ -1,5 +1,6 @@
 use crate::error::Error;
 use crate::proof::types::signature_and_data::SignatureAndData;
+use alloc::format;
 use ibc_core::primitives::Timestamp;
 use ibc_proto::ibc::lightclients::solomachine::v3::TimestampedSignatureData as RawTimestampedSignatureData;
 use ibc_proto::Protobuf;

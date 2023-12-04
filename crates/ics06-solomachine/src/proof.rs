@@ -1,11 +1,10 @@
-use crate::cosmos::crypto::PublicKey;
-use crate::error::Error;
-use crate::prelude::*;
-use crate::proof::types::signature_and_data::SignatureAndData;
+use alloc::format;
+use alloc::vec::Vec;
+use ibc_client_solomachine_types::cosmos::crypto::PublicKey;
+use ibc_client_solomachine_types::error::Error;
+use ibc_client_solomachine_types::proof::types::signature_and_data::SignatureAndData;
 use tendermint::crypto::signature::Verifier;
 use tendermint::Signature;
-
-pub mod types;
 
 // Verify_signature verifies if the the provided public key generated the signature
 // over the given data. Single and Multi signature public keys are supported.

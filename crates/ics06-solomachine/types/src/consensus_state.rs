@@ -30,7 +30,7 @@ pub struct ConsensusState {
     pub diversifier: String,
     pub timestamp: Timestamp,
     // todo(davirian), this can improve
-    root: CommitmentRoot,
+    pub root: CommitmentRoot,
 }
 
 impl ConsensusState {

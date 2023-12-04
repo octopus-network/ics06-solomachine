@@ -1,5 +1,6 @@
 use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
+use alloc::string::String;
 use ibc_proto::ibc::lightclients::solomachine::v3::HeaderData as RawHeaderData;
 use ibc_proto::Protobuf;
 
