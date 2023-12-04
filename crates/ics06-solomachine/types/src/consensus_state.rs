@@ -1,13 +1,17 @@
+//! Defines Solmachine's `ConsensusState` type
+
 use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
-use crate::prelude::*;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics23_commitment::commitment::CommitmentRoot;
-use ibc::core::timestamp::Timestamp;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::commitment_types::commitment::CommitmentRoot;
+use ibc_core::primitives::prelude::*;
+use ibc_core::primitives::Timestamp;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v3::ConsensusState as RawSmConsensusState;
-use ibc_proto::protobuf::Protobuf;
+use ibc_proto::Protobuf;
 use prost::Message;
+
+// use crate::header::Header;
 
 pub const SOLOMACHINE_CONSENSUS_STATE_TYPE_URL: &str =
     "/ibc.lightclients.solomachine.v3.ConsensusState";
@@ -60,26 +64,6 @@ impl ConsensusState {
     // todo(davirain)
     pub fn public_key(&self) -> PublicKey {
         self.public_key
-    }
-}
-
-impl ibc::core::ics02_client::consensus_state::ConsensusState for ConsensusState {
-    fn root(&self) -> &CommitmentRoot {
-        &self.root
-    }
-
-    fn timestamp(&self) -> Timestamp {
-        self.timestamp
-    }
-
-    /// Serializes the `ConsensusState`. This is expected to be implemented as
-    /// first converting to the raw type (i.e. the protobuf definition), and then
-    /// serializing that.
-    ///
-    /// Note that the `Protobuf` trait in `tendermint-proto` provides convenience methods
-    /// to do this automatically.
-    fn encode_vec(&self) -> Vec<u8> {
-        <Self as Protobuf<Any>>::encode_vec(self)
     }
 }
 
@@ -144,7 +128,7 @@ impl From<ConsensusState> for Any {
     fn from(consensus_state: ConsensusState) -> Self {
         Any {
             type_url: SOLOMACHINE_CONSENSUS_STATE_TYPE_URL.to_string(),
-            value: Protobuf::<RawSmConsensusState>::encode_vec(&consensus_state),
+            value: Protobuf::<RawSmConsensusState>::encode_vec(consensus_state),
         }
     }
 }

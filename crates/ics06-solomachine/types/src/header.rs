@@ -1,12 +1,16 @@
+//! Defines the domain type for solomachine headers
+
 use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
-use crate::prelude::*;
+use alloc::string::ToString;
 use bytes::Buf;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::timestamp::Timestamp;
+use core::fmt::{Display, Error as FmtError, Formatter};
+use ibc_core::client::types::error::ClientError;
+use ibc_core::primitives::prelude::*;
+use ibc_core::primitives::Timestamp;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v3::Header as RawSmHeader;
-use ibc_proto::protobuf::Protobuf;
+use ibc_proto::Protobuf;
 use prost::Message;
 
 pub const SOLOMACHINE_HEADER_TYPE_URL: &str = "/ibc.lightclients.solomachine.v3.Header";
@@ -95,7 +99,7 @@ impl From<Header> for Any {
     fn from(header: Header) -> Self {
         Any {
             type_url: SOLOMACHINE_HEADER_TYPE_URL.to_string(),
-            value: Protobuf::<RawSmHeader>::encode_vec(&header),
+            value: Protobuf::<RawSmHeader>::encode_vec(header),
         }
     }
 }

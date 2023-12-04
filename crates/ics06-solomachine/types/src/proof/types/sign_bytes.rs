@@ -1,8 +1,7 @@
 use crate::error::Error;
-use crate::prelude::*;
 use ibc_proto::ibc::core::commitment::v1::MerklePath;
 use ibc_proto::ibc::lightclients::solomachine::v3::SignBytes as RawSignBytes;
-use ibc_proto::protobuf::Protobuf;
+use ibc_proto::Protobuf;
 use prost::Message;
 
 /// SignBytes defines the signed bytes used for signature verification.

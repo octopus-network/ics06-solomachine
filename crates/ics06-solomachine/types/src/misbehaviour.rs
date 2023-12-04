@@ -1,12 +1,14 @@
+//! Defines the misbehaviour type for the solomachine light client
+
 use crate::error::Error;
-use crate::prelude::*;
 use crate::proof::types::signature_and_data::SignatureAndData;
 use bytes::Buf;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::Height;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::Height;
+use ibc_core::primitives::prelude::*;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v3::Misbehaviour as RawSmMisbehaviour;
-use ibc_proto::protobuf::Protobuf;
+use ibc_proto::Protobuf;
 use prost::Message;
 
 pub const SOLOMACHINE_MISBEHAVIOUR_TYPE_URL: &str = "/ibc.lightclients.solomachine.v3.Misbehaviour";
@@ -86,7 +88,7 @@ impl From<Misbehaviour> for Any {
     fn from(misbehaviour: Misbehaviour) -> Self {
         Any {
             type_url: SOLOMACHINE_MISBEHAVIOUR_TYPE_URL.to_string(),
-            value: Protobuf::<RawSmMisbehaviour>::encode_vec(&misbehaviour),
+            value: Protobuf::<RawSmMisbehaviour>::encode_vec(misbehaviour),
         }
     }
 }
