@@ -18,8 +18,11 @@ pub const SOLOMACHINE_MISBEHAVIOUR_TYPE_URL: &str = "/ibc.lightclients.solomachi
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, PartialEq)]
 pub struct Misbehaviour {
+    /// The sequence number at which the infraction occurred
     pub sequence: Height,
+    /// The first signature
     pub signature_one: SignatureAndData,
+    /// The second signature
     pub signature_two: SignatureAndData,
 }
 

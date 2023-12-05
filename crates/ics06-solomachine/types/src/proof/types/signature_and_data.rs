@@ -12,9 +12,13 @@ use prost::Message;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, PartialEq)]
 pub struct SignatureAndData {
+    /// the signature
     pub signature: Vec<u8>,
+    /// the standardised path bytes
     pub path: MerklePath,
+    /// the marshaled data bytes
     pub data: Vec<u8>,
+    /// the proof timestamp
     pub timestamp: Timestamp,
 }
 impl core::fmt::Display for SignatureAndData {

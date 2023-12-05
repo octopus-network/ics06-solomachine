@@ -27,6 +27,7 @@ pub struct ClientState {
     pub sequence: Height,
     /// frozen sequence of the solo machine
     pub is_frozen: bool,
+    /// consensus state of the solo machine
     pub consensus_state: SmConsensusState,
 }
 impl ClientState {

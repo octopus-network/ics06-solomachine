@@ -11,8 +11,6 @@ use ibc_proto::ibc::lightclients::solomachine::v3::ConsensusState as RawSmConsen
 use ibc_proto::Protobuf;
 use prost::Message;
 
-// use crate::header::Header;
-
 pub const SOLOMACHINE_CONSENSUS_STATE_TYPE_URL: &str =
     "/ibc.lightclients.solomachine.v3.ConsensusState";
 
@@ -28,6 +26,7 @@ pub struct ConsensusState {
     /// machine clients (potentially on different chains) without being considered
     /// misbehaviour.
     pub diversifier: String,
+    /// timestamp of the consensus state
     pub timestamp: Timestamp,
     // todo(davirian), this can improve
     pub root: CommitmentRoot,

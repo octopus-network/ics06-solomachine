@@ -9,7 +9,9 @@ use ibc_proto::Protobuf;
 /// signature.
 #[derive(Clone, PartialEq)]
 pub struct TimestampedSignatureData {
+    /// the signature data
     pub signature_data: SignatureAndData,
+    /// the proof timestamp
     pub timestamp: Timestamp,
 }
 

@@ -19,9 +19,13 @@ pub const SOLOMACHINE_HEADER_TYPE_URL: &str = "/ibc.lightclients.solomachine.v3.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, PartialEq)]
 pub struct Header {
+    /// Timestamp of the consensus state
     pub timestamp: Timestamp,
+    /// Signature of the new public key
     pub signature: Vec<u8>,
+    /// New public key of the validator
     pub new_public_key: PublicKey,
+    /// New diversifier of the validator
     pub new_diversifier: String,
 }
 
@@ -52,17 +56,16 @@ impl TryFrom<RawSmHeader> for Header {
     fn try_from(raw: RawSmHeader) -> Result<Self, Self::Error> {
         let timestamp =
             Timestamp::from_nanoseconds(raw.timestamp).map_err(Error::ParseTimeError)?;
-        let signature = raw.signature;
 
         let new_public_key =
             PublicKey::try_from(raw.new_public_key.ok_or(Error::PublicKeyIsEmpty)?)
                 .map_err(Error::PublicKeyParseFailed)?;
-        let new_diversifier = raw.new_diversifier;
+
         Ok(Self {
             timestamp,
-            signature,
+            signature: raw.signature,
             new_public_key,
-            new_diversifier,
+            new_diversifier: raw.new_diversifier,
         })
     }
 }
@@ -122,6 +125,5 @@ fn test_header_der_ser() {
     let any_header = Any::from(temp_header);
     let encode_any_header = any_header.encode_to_vec();
     let decode_any_header = Any::decode(encode_any_header.as_ref()).unwrap();
-    // println!("decode_any_header = {:?}", decode_any_header);
     assert_eq!(decode_any_header, any_header);
 }
