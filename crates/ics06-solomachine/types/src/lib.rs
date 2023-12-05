@@ -1,5 +1,6 @@
 //! ICS-06: Solomachine Client implements a client verification algorithm for blockchains which use
 //! the Solomachine consensus algorithm.
+
 #![no_std]
 #![forbid(unsafe_code)]
 #![cfg_attr(not(test), deny(clippy::unwrap_used))]

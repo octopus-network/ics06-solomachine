@@ -1,4 +1,5 @@
 //! Error types
+
 use alloc::string::String;
 use displaydoc::Display;
 use tendermint::Hash;
