@@ -1,15 +1,17 @@
 use crate::error::Error;
-use crate::prelude::*;
 use crate::proof::types::signature_and_data::SignatureAndData;
-use ibc::core::timestamp::Timestamp;
+use alloc::format;
+use ibc_core::primitives::Timestamp;
 use ibc_proto::ibc::lightclients::solomachine::v3::TimestampedSignatureData as RawTimestampedSignatureData;
-use ibc_proto::protobuf::Protobuf;
+use ibc_proto::Protobuf;
 
 /// TimestampedSignatureData contains the signature data and the timestamp of the
 /// signature.
 #[derive(Clone, PartialEq)]
 pub struct TimestampedSignatureData {
+    /// the signature data
     pub signature_data: SignatureAndData,
+    /// the proof timestamp
     pub timestamp: Timestamp,
 }
 

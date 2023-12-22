@@ -1,15 +1,16 @@
-use super::ClientState;
-use crate::header::Header as SmHeader;
-use crate::prelude::*;
-use crate::proof::types::header_data::HeaderData;
-use crate::proof::types::sign_bytes::SignBytes;
-use crate::proof::types::signature_and_data::SignatureAndData;
 use crate::proof::verify_signature;
-use crate::ValidationContext as SmValidationContext;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics24_host::identifier::ClientId;
+use ibc_client_solomachine_types::proof::types::sign_bytes::SignBytes;
+use ibc_client_solomachine_types::Header as SmHeader;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::host::types::identifiers::ClientId;
+use ibc_core::primitives::prelude::*;
+use ibc_proto::Protobuf;
+
+use super::ClientState;
+use crate::context::ValidationContext as SmValidationContext;
+use ibc_client_solomachine_types::proof::types::header_data::HeaderData;
+use ibc_client_solomachine_types::proof::types::signature_and_data::SignatureAndData;
 use ibc_proto::ibc::core::commitment::v1::MerklePath;
-use ibc_proto::protobuf::Protobuf;
 
 impl ClientState {
     pub fn verify_header<ClientValidationContext>(
@@ -22,11 +23,11 @@ impl ClientState {
         ClientValidationContext: SmValidationContext,
     {
         // assert update timestamp is not less than current consensus state timestamp
-        if header.timestamp < self.consensus_state.timestamp {
+        if header.timestamp < self.0.consensus_state.timestamp {
             return Err(ClientError::Other {
                 description: format!(
                     "header timestamp is less than to the consensus state timestamp ({} < {})",
-                    header.timestamp, self.consensus_state.timestamp,
+                    header.timestamp, self.0.consensus_state.timestamp,
                 ),
             });
         }
@@ -39,9 +40,9 @@ impl ClientState {
         let data_bz = header_data.encode_vec();
 
         let sign_bytes = SignBytes {
-            sequence: self.sequence.revision_height(),
+            sequence: self.0.sequence.revision_height(),
             timestamp: header.timestamp.nanoseconds(),
-            diversifier: self.consensus_state.diversifier.clone(),
+            diversifier: self.0.consensus_state.diversifier.clone(),
             // todo(davirain)
             // ref: https://github.com/cosmos/ibc-go/blob/3765dfc3b89b16c81abcc3e0b1ad5823d7f7eaa0/modules/light-clients/06-solomachine/header.go#L13
             // SentinelHeaderPath defines a placeholder path value used for headers in solomachine client updates
@@ -58,7 +59,7 @@ impl ClientState {
                 description: "failed to decode SignatureData".into(),
             })?;
 
-        let public_key = self.consensus_state.public_key();
+        let public_key = self.0.consensus_state.public_key();
 
         verify_signature(public_key, data, sig_data).map_err(|e| ClientError::Other {
             description: e.to_string(),

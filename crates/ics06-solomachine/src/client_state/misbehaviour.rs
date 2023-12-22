@@ -1,19 +1,17 @@
-use crate::client_state::SignatureAndData;
-use crate::consensus_state::ConsensusState as SmConsensusState;
-use crate::header::Header as SmHeader;
-use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
-use crate::prelude::*;
-use crate::proof::types::sign_bytes::SignBytes;
 use crate::proof::verify_signature;
-use crate::ValidationContext as SmValidationContext;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics24_host::identifier::ClientId;
-use ibc::core::timestamp::Timestamp;
-use ibc_proto::protobuf::Protobuf;
+use ibc_client_solomachine_types::proof::types::sign_bytes::SignBytes;
+use ibc_client_solomachine_types::proof::types::signature_and_data::SignatureAndData;
+use ibc_client_solomachine_types::{Header as SmHeader, Misbehaviour as SmMisbehaviour};
+use ibc_core::client::types::error::ClientError;
+use ibc_core::host::types::identifiers::ClientId;
+use ibc_core::primitives::prelude::*;
+use ibc_core::primitives::Timestamp;
+use ibc_proto::Protobuf;
 
-use super::ClientState;
+use super::{ClientState as SmClientState, SmValidationContext};
+use crate::consensus_state::ConsensusState as SmConsensusState;
 
-impl ClientState {
+impl SmClientState {
     // verify_misbehaviour determines whether or not two conflicting headers at
     // the same height would have convinced the light client.
     pub fn verify_misbehaviour<ClientValidationContext>(
@@ -52,7 +50,7 @@ impl ClientState {
         let sign_bytes = SignBytes {
             sequence: misbehaviour.sequence.revision_height(),
             timestamp: signature_and_data.timestamp.nanoseconds(),
-            diversifier: self.consensus_state.diversifier.clone(),
+            diversifier: self.0.consensus_state.diversifier.clone(),
             path: signature_and_data.path,
             data: signature_and_data.data,
         };
@@ -63,7 +61,7 @@ impl ClientState {
                 description: "failed to decode SignatureData".into(),
             })?;
 
-        let public_key = self.consensus_state.public_key();
+        let public_key = self.0.consensus_state.public_key();
 
         verify_signature(public_key, data, signature_and_data).map_err(|e| ClientError::Other {
             description: e.to_string(),

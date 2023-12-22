@@ -1,56 +1,35 @@
-[package]
-name = "ics06-solomachine"
-version = "0.1.2"
-edition = "2021"
-license = "Apache-2.0"
-keywords = ["solomachine", "ics06", "cosmos", "ibc"]
-repository = "https://github.com/octopus-network/ics06-solomachine.git"
-authors = ['Octopus Network <hi@oct.network>']
-readme = "README.md"
-description  = """
-    Implementation of the ICS06 solomachine client according by ibc-go.
-"""
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-ibc = { version = "0.45.0", features = ["parity-scale-codec", "borsh"], default-features = false }
-ibc-proto = { version = "0.35", features = ["parity-scale-codec", "borsh", "serde"], default-features = false }
-prost = { version = "0.11", default-features = false }
-displaydoc = { version = "0.2", default-features = false }
-bytes = { version = "1.2.1", default-features = false }
-serde_derive = { version = "1.0.104", default-features = false }
-serde = { version = "1.0", default-features = false }
-serde_json = { version = "1", default-features = false }
-k256 = { version = "0.13", features = ["ecdsa", "sha256"], default-features = false }
-subtle-encoding = { version = "0.5", default-features = false }
-
-
-[dependencies.tendermint]
-version = "0.33"
-default-features = false
-features = ["secp256k1", "rust-crypto"]
-
-[dependencies.tendermint-proto]
-version = "0.33"
-default-features = false
-
-[dev-dependencies]
-hex-literal = "0.4"
-
-[features]
-default = ["std", "v3", "serde"]
-std = [
-    "ibc/std",
-    "ibc-proto/std",
-    "prost/std",
-    "displaydoc/std",
-    "bytes/std",
-    "serde/std",
-    "serde_json/std",
-    "k256/std",
-    "tendermint/std",
-    "subtle-encoding/std",
+[workspace]
+resolver = "2"
+members = [
+    "crates/ics06-solomachine",
+    "crates/ics06-solomachine/types",
 ]
-v3 = []
-serde = ["serde/std", "serde_json/std", "ibc/serde"]
+
+[patch.crates-io]
+# ibc proto
+ibc-proto = { git = "https://github.com/octopus-network/ibc-proto-rs.git", branch = "v0.38.0-octopus"}
+# ibc
+ibc-core = { git = "https://github.com/octopus-network/ibc-rs.git", branch = "v0.48.1-octopus" }
+
+[workspace.dependencies]
+# external dependencies
+borsh = { version = "0.10", default-features = false }
+bytes = { version = "1.5.0", default-features = false }
+displaydoc = { version = "0.2", default-features = false }
+prost = { version = "0.12", default-features = false }
+serde = { version = "1.0", default-features = false }
+serde_json = { package = "serde-json-wasm", version = "1.0.0" , default-features = false }
+subtle-encoding     = { version = "0.5", default-features = false }
+k256 = { version = "0.13", features = ["ecdsa", "sha256"], default-features = false }
+
+ibc-core    = { version = "0.48.1", default-features = false }
+ibc-proto   = { version = "0.38.0", default-features = false, features = ["parity-scale-codec", "borsh", "serde"] }
+
+tendermint = { version = "0.34.0", default-features = false, features = ["secp256k1", "rust-crypto"] }
+tendermint-proto = { version = "0.34.0", default-features = false }
+
+# parity dependencies
+parity-scale-codec = { version = "3.6.5", default-features = false, features = ["full"] }
+scale-info = { version = "2.10.0", default-features = false, features = ["derive"] }
+
+ibc-client-solomachine-types = { version = "0.1.3", path = "crates/ics06-solomachine/types", default-features = false }

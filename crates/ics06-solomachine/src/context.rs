@@ -1,14 +1,13 @@
 use super::consensus_state::ConsensusState as SmConsensusState;
 use alloc::string::ToString;
-use ibc::{
-    core::{
-        ics02_client::ClientExecutionContext,
-        ics24_host::{identifier::ClientId, path::ClientConsensusStatePath},
-        timestamp::Timestamp,
-        ContextError,
-    },
-    Height,
-};
+
+use ibc_core::client::context::ClientExecutionContext;
+use ibc_core::client::types::Height;
+use ibc_core::handler::types::error::ContextError;
+use ibc_core::host::types::identifiers::ClientId;
+use ibc_core::host::types::path::ClientConsensusStatePath;
+use ibc_core::primitives::prelude::*;
+use ibc_core::primitives::Timestamp;
 
 /// Client's context required during both validation and execution
 pub trait CommonContext {

@@ -1,8 +1,8 @@
 use crate::cosmos::crypto::PublicKey;
 use crate::error::Error;
-use crate::prelude::*;
+use alloc::string::String;
 use ibc_proto::ibc::lightclients::solomachine::v3::HeaderData as RawHeaderData;
-use ibc_proto::protobuf::Protobuf;
+use ibc_proto::Protobuf;
 
 /// HeaderData returns the SignBytes data for update verification.
 #[allow(clippy::derive_partial_eq_without_eq)]

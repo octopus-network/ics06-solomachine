@@ -1,54 +1,95 @@
-use super::{
-    client_type as sm_client_type, ExecutionContext as SmExecutionContext,
-    ValidationContext as SmValidationContext,
-};
-use crate::consensus_state::ConsensusState as SmConsensusState;
-use crate::cosmos::crypto::PublicKey;
-use crate::error::Error;
-use crate::header::Header as SmHeader;
-use crate::misbehaviour::Misbehaviour as SmMisbehaviour;
-use crate::prelude::*;
-use crate::proof::types::sign_bytes::SignBytes;
-use crate::proof::types::signature_and_data::SignatureAndData;
-use crate::proof::types::timestamped_signature_data::TimestampedSignatureData;
+use crate::alloc::string::ToString;
 use crate::proof::verify_signature;
-use ibc::core::ics02_client::client_state::Status;
-use ibc::core::ics02_client::client_state::{
-    ClientStateCommon, ClientStateExecution, ClientStateValidation, UpdateKind,
+use alloc::format;
+use alloc::vec;
+use alloc::vec::Vec;
+use ibc_client_solomachine_types::error::Error;
+use ibc_client_solomachine_types::proof::types::sign_bytes::SignBytes;
+use ibc_client_solomachine_types::{
+    client_type as sm_client_type, ClientState as ClientStateType,
+    ConsensusState as ConsensusStateType, Header as SmHeader, Misbehaviour as SmMisbehaviour,
 };
-use ibc::core::ics02_client::client_type::ClientType;
-use ibc::core::ics02_client::consensus_state::ConsensusState;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics02_client::ClientExecutionContext;
-use ibc::core::ics23_commitment::commitment::{
+use ibc_core::client::context::client_state::{
+    ClientStateCommon, ClientStateExecution, ClientStateValidation,
+};
+use ibc_core::client::context::consensus_state::ConsensusState;
+use ibc_core::client::context::{ClientExecutionContext, ClientValidationContext};
+use ibc_core::client::types::error::ClientError;
+use ibc_core::client::types::{Height, Status, UpdateKind};
+use ibc_core::commitment_types::commitment::{
     CommitmentPrefix, CommitmentProofBytes, CommitmentRoot,
 };
-use ibc::core::ics23_commitment::merkle::apply_prefix;
-use ibc::core::ics24_host::identifier::ClientId;
-use ibc::core::ics24_host::path::Path;
-use ibc::core::ics24_host::path::{ClientConsensusStatePath, ClientStatePath};
-use ibc::core::timestamp::Timestamp;
-use ibc::Height;
+use ibc_core::commitment_types::merkle::apply_prefix;
+use ibc_core::host::types::identifiers::{ClientId, ClientType};
+use ibc_core::host::types::path::Path;
+use ibc_core::host::types::path::{ClientConsensusStatePath, ClientStatePath};
+use ibc_core::host::ExecutionContext;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::ibc::lightclients::solomachine::v3::ClientState as RawSmClientState;
-use ibc_proto::protobuf::Protobuf;
-use prost::Message;
+use ibc_proto::Protobuf;
 
 pub mod misbehaviour;
 pub mod update_client;
+
+use super::consensus_state::ConsensusState as SmConsensusState;
+use crate::context::{
+    ExecutionContext as SmExecutionContext, ValidationContext as SmValidationContext,
+};
 
 pub const SOLOMACHINE_CLIENT_STATE_TYPE_URL: &str = "/ibc.lightclients.solomachine.v3.ClientState";
 
 /// ClientState defines a solo machine client that tracks the current consensus
 /// state and if the client is frozen.
+/// Newtype wrapper around the `ClientState` type imported from the
+/// `ibc-client-tendermint-types` crate. This wrapper exists so that we can
+/// bypass Rust's orphan rules and implement traits from
+/// `ibc::core::client::context` on the `ClientState` type.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, PartialEq, Debug)]
-pub struct ClientState {
-    /// latest sequence of the client state
-    pub sequence: Height,
-    /// frozen sequence of the solo machine
-    pub is_frozen: bool,
-    pub consensus_state: SmConsensusState,
+#[derive(Clone, Debug, PartialEq)]
+pub struct ClientState(ClientStateType);
+
+impl ClientState {
+    pub fn inner(&self) -> &ClientStateType {
+        &self.0
+    }
+}
+
+impl From<ClientStateType> for ClientState {
+    fn from(client_state: ClientStateType) -> Self {
+        Self(client_state)
+    }
+}
+
+impl Protobuf<RawSmClientState> for ClientState {}
+
+impl TryFrom<RawSmClientState> for ClientState {
+    type Error = Error;
+
+    fn try_from(raw: RawSmClientState) -> Result<Self, Self::Error> {
+        Ok(Self(ClientStateType::try_from(raw)?))
+    }
+}
+
+impl From<ClientState> for RawSmClientState {
+    fn from(client_state: ClientState) -> Self {
+        client_state.0.into()
+    }
+}
+
+impl Protobuf<Any> for ClientState {}
+
+impl TryFrom<Any> for ClientState {
+    type Error = ClientError;
+
+    fn try_from(raw: Any) -> Result<Self, Self::Error> {
+        Ok(Self(ClientStateType::try_from(raw)?))
+    }
+}
+
+impl From<ClientState> for Any {
+    fn from(client_state: ClientState) -> Self {
+        client_state.0.into()
+    }
 }
 
 impl ClientStateCommon for ClientState {
@@ -68,7 +109,7 @@ impl ClientStateCommon for ClientState {
     }
 
     fn latest_height(&self) -> Height {
-        self.latest_height()
+        self.0.latest_height()
     }
 
     fn validate_proof_height(&self, proof_height: Height) -> Result<(), ClientError> {
@@ -108,7 +149,8 @@ impl ClientStateCommon for ClientState {
         path: Path,
         value: Vec<u8>,
     ) -> Result<(), ClientError> {
-        let (public_key, sig_data, timestamp, sequence) = self.produce_verification_args(proof)?;
+        let (public_key, sig_data, timestamp, sequence) =
+            self.0.produce_verification_args(proof)?;
         let merkle_path = apply_prefix(prefix, vec![path.to_string()]);
         if merkle_path.key_path.is_empty() {
             return Err(ClientError::Other {
@@ -118,7 +160,7 @@ impl ClientStateCommon for ClientState {
         let sign_bytes = SignBytes {
             sequence,
             timestamp: timestamp.nanoseconds(),
-            diversifier: self.consensus_state.diversifier.clone(),
+            diversifier: self.0.consensus_state.diversifier.clone(),
             path: merkle_path,
             data: value,
         };
@@ -135,7 +177,8 @@ impl ClientStateCommon for ClientState {
         _root: &CommitmentRoot,
         path: Path,
     ) -> Result<(), ClientError> {
-        let (public_key, sig_data, timestamp, sequence) = self.produce_verification_args(proof)?;
+        let (public_key, sig_data, timestamp, sequence) =
+            self.0.produce_verification_args(proof)?;
         let merkle_path = apply_prefix(prefix, vec![path.to_string()]);
         if merkle_path.key_path.is_empty() {
             return Err(ClientError::Other {
@@ -145,7 +188,7 @@ impl ClientStateCommon for ClientState {
         let sign_bytes = SignBytes {
             sequence,
             timestamp: timestamp.nanoseconds(),
-            diversifier: self.consensus_state.diversifier.clone(),
+            diversifier: self.0.consensus_state.diversifier.clone(),
             path: merkle_path,
             data: vec![],
         };
@@ -157,13 +200,15 @@ impl ClientStateCommon for ClientState {
     }
 }
 
-impl<ClientValidationContext> ClientStateValidation<ClientValidationContext> for ClientState
+impl<V> ClientStateValidation<V> for ClientState
 where
-    ClientValidationContext: SmValidationContext,
+    V: ClientValidationContext + SmValidationContext,
+    V::AnyConsensusState: TryInto<SmConsensusState>,
+    ClientError: From<<V::AnyConsensusState as TryInto<SmConsensusState>>::Error>,
 {
     fn verify_client_message(
         &self,
-        ctx: &ClientValidationContext,
+        ctx: &V,
         client_id: &ClientId,
         client_message: Any,
         update_kind: &UpdateKind,
@@ -182,7 +227,7 @@ where
 
     fn check_for_misbehaviour(
         &self,
-        ctx: &ClientValidationContext,
+        ctx: &V,
         client_id: &ClientId,
         client_message: Any,
         update_kind: &UpdateKind,
@@ -199,12 +244,8 @@ where
         }
     }
 
-    fn status(
-        &self,
-        _ctx: &ClientValidationContext,
-        _client_id: &ClientId,
-    ) -> Result<Status, ClientError> {
-        if self.is_frozen {
+    fn status(&self, _ctx: &V, _client_id: &ClientId) -> Result<Status, ClientError> {
+        if self.0.is_frozen {
             return Ok(Status::Frozen);
         }
 
@@ -239,7 +280,7 @@ where
 
 impl<E> ClientStateExecution<E> for ClientState
 where
-    E: SmExecutionContext,
+    E: SmExecutionContext + ExecutionContext,
     <E as ClientExecutionContext>::AnyClientState: From<ClientState>,
     <E as ClientExecutionContext>::AnyConsensusState: From<SmConsensusState>,
 {
@@ -253,7 +294,11 @@ where
 
         ctx.store_client_state(ClientStatePath::new(client_id), self.clone().into())?;
         ctx.store_consensus_state(
-            ClientConsensusStatePath::new(client_id, &self.latest_height()),
+            ClientConsensusStatePath::new(
+                client_id.clone(),
+                self.latest_height().revision_number(),
+                self.latest_height().revision_height(),
+            ),
             sm_consensus_state.into(),
         )?;
 
@@ -269,15 +314,15 @@ where
         let sm_header = SmHeader::try_from(header).map_err(|e| ClientError::Other {
             description: format!("decode SmHeader Error({})", e),
         })?;
-        let consensus_state = SmConsensusState::new(
+        let consensus_state = SmConsensusState::from(ConsensusStateType::new(
             sm_header.new_public_key,
             sm_header.new_diversifier,
             sm_header.timestamp,
-        );
+        ));
         let mut new_client_state = self.clone();
-        new_client_state.sequence.increment();
-        let new_height = new_client_state.sequence;
-        new_client_state.consensus_state = consensus_state;
+        new_client_state.0.sequence.increment();
+        let new_height = new_client_state.0.sequence;
+        new_client_state.0.consensus_state = consensus_state.inner().clone();
         ctx.store_client_state(ClientStatePath::new(client_id), new_client_state.into())?;
         Ok(vec![new_height])
     }
@@ -289,9 +334,14 @@ where
         _client_message: Any,
         _update_kind: &UpdateKind,
     ) -> Result<(), ClientError> {
-        let frozen_client_state = self.clone().with_frozen_height(Height::min(0));
+        let frozen_client_state = self.clone().0.with_frozen_height(Height::min(0));
 
-        ctx.store_client_state(ClientStatePath::new(client_id), frozen_client_state.into())?;
+        let wrapped_frozen_client_state = ClientState::from(frozen_client_state);
+
+        ctx.store_client_state(
+            ClientStatePath::new(client_id),
+            wrapped_frozen_client_state.into(),
+        )?;
 
         Ok(())
     }
@@ -307,148 +357,5 @@ where
         Err(ClientError::Other {
             description: "No implement".to_string(),
         })
-    }
-}
-
-impl ClientState {
-    /// Create a new ClientState Instance.
-    pub fn new(sequence: Height, is_frozen: bool, consensus_state: SmConsensusState) -> Self {
-        Self {
-            sequence,
-            is_frozen,
-            consensus_state,
-        }
-    }
-
-    pub fn with_frozen(self) -> Self {
-        Self {
-            is_frozen: true,
-            ..self
-        }
-    }
-
-    pub fn with_frozen_height(self, h: Height) -> Self {
-        Self {
-            sequence: h,
-            ..self
-        }
-    }
-
-    /// Return exported.Height to satisfy ClientState interface
-    /// Revision number is always 0 for a solo-machine.
-    pub fn latest_height(&self) -> Height {
-        self.sequence
-    }
-
-    // GetTimestampAtHeight returns the timestamp in nanoseconds of the consensus state at the given height.
-    pub fn time_stamp(&self) -> Timestamp {
-        self.consensus_state.timestamp
-    }
-
-    // Validate performs basic validation of the client state fields.
-    pub fn valida_basic(&self) -> Result<(), Error> {
-        if self.sequence.revision_height() == 0 {
-            return Err(Error::SequenceCannotZero);
-        }
-        self.consensus_state.valida_basic()
-    }
-
-    // produceVerificationArgs perfoms the basic checks on the arguments that are
-    // shared between the verification functions and returns the public key of the
-    // consensus state, the unmarshalled proof representing the signature and timestamp.
-    pub fn produce_verification_args(
-        &self,
-        proof: &CommitmentProofBytes,
-    ) -> Result<(PublicKey, SignatureAndData, Timestamp, u64), Error> {
-        let proof = Vec::<u8>::from(proof.clone());
-        if proof.is_empty() {
-            return Err(Error::Other("proof cannot be empty".into()));
-        }
-
-        let timestamped_sig_data = TimestampedSignatureData::decode_vec(&proof).map_err(|e| {
-            Error::Other(format!(
-                "failed to decode proof into type TimestampedSignatureData: {}",
-                e
-            ))
-        })?;
-
-        let timestamp = timestamped_sig_data.timestamp;
-        let signature_and_data = timestamped_sig_data.signature_data;
-
-        if self.consensus_state.timestamp > timestamp {
-            return Err(Error::Other(format!(
-                "the consensus state timestamp is greater than the signature timestamp ({} >= {})",
-                self.consensus_state.timestamp, timestamp
-            )));
-        }
-
-        let latest_sequence = self.sequence.revision_height();
-        let public_key = self.consensus_state.public_key();
-        Ok((public_key, signature_and_data, timestamp, latest_sequence))
-    }
-}
-
-impl Protobuf<RawSmClientState> for ClientState {}
-
-impl TryFrom<RawSmClientState> for ClientState {
-    type Error = Error;
-
-    fn try_from(raw: RawSmClientState) -> Result<Self, Self::Error> {
-        let sequence = Height::new(0, raw.sequence).map_err(Error::InvalidHeight)?;
-        let consensus_state: SmConsensusState = raw
-            .consensus_state
-            .ok_or(Error::ConsensusStateIsEmpty)?
-            .try_into()?;
-
-        Ok(Self {
-            sequence,
-            is_frozen: raw.is_frozen,
-            consensus_state,
-        })
-    }
-}
-
-impl From<ClientState> for RawSmClientState {
-    fn from(value: ClientState) -> Self {
-        Self {
-            sequence: value.sequence.revision_height(),
-            is_frozen: value.is_frozen,
-            consensus_state: Some(value.consensus_state.into()),
-        }
-    }
-}
-
-impl Protobuf<Any> for ClientState {}
-
-impl TryFrom<Any> for ClientState {
-    type Error = ClientError;
-
-    fn try_from(raw: Any) -> Result<Self, Self::Error> {
-        use bytes::Buf;
-        use core::ops::Deref;
-
-        fn decode_client_state<B: Buf>(buf: B) -> Result<ClientState, Error> {
-            RawSmClientState::decode(buf)
-                .map_err(Error::Decode)?
-                .try_into()
-        }
-
-        match raw.type_url.as_str() {
-            SOLOMACHINE_CLIENT_STATE_TYPE_URL => {
-                decode_client_state(raw.value.deref()).map_err(Into::into)
-            }
-            _ => Err(ClientError::UnknownClientStateType {
-                client_state_type: raw.type_url,
-            }),
-        }
-    }
-}
-
-impl From<ClientState> for Any {
-    fn from(client_state: ClientState) -> Self {
-        Any {
-            type_url: SOLOMACHINE_CLIENT_STATE_TYPE_URL.to_string(),
-            value: Protobuf::<RawSmClientState>::encode_vec(&client_state),
-        }
     }
 }

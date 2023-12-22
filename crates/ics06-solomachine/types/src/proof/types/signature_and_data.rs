@@ -1,9 +1,10 @@
 use crate::error::Error;
-use crate::prelude::*;
-use ibc::core::timestamp::Timestamp;
+use alloc::format;
+use alloc::vec::Vec;
+use ibc_core::primitives::Timestamp;
 use ibc_proto::ibc::core::commitment::v1::MerklePath;
 use ibc_proto::ibc::lightclients::solomachine::v3::SignatureAndData as RawSignatureAndData;
-use ibc_proto::protobuf::Protobuf;
+use ibc_proto::Protobuf;
 use prost::Message;
 
 /// SignatureAndData contains a signature and the data signed over to create that
@@ -11,9 +12,13 @@ use prost::Message;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, PartialEq)]
 pub struct SignatureAndData {
+    /// the signature
     pub signature: Vec<u8>,
+    /// the standardised path bytes
     pub path: MerklePath,
+    /// the marshaled data bytes
     pub data: Vec<u8>,
+    /// the proof timestamp
     pub timestamp: Timestamp,
 }
 impl core::fmt::Display for SignatureAndData {

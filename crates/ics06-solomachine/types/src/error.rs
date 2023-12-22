@@ -1,9 +1,10 @@
-use crate::prelude::*;
+use alloc::string::String;
+use alloc::string::ToString;
 use displaydoc::Display;
-use ibc::core::ics02_client::error::ClientError;
-use ibc::core::ics03_connection::error::ConnectionError;
-use ibc::core::ics04_channel::error::ChannelError;
-use ibc::core::timestamp::ParseTimestampError;
+use ibc_core::channel::types::error::ChannelError;
+use ibc_core::client::types::error::ClientError;
+use ibc_core::connection::types::error::ConnectionError;
+use ibc_core::primitives::ParseTimestampError;
 
 #[derive(Debug, Display)]
 pub enum Error {
@@ -59,6 +60,6 @@ impl From<Error> for ClientError {
     }
 }
 
-pub(crate) trait IntoResult<T, E> {
+pub trait IntoResult<T, E> {
     fn into_result(self) -> Result<T, E>;
 }
