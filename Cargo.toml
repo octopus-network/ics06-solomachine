@@ -25,7 +25,7 @@ k256 = { version = "0.13", features = ["ecdsa", "sha256"], default-features = fa
 ibc-core    = { version = "0.48.1", default-features = false }
 ibc-proto   = { version = "0.38.0", default-features = false, features = ["parity-scale-codec", "borsh", "serde"] }
 
-tendermint = { version = "0.34.0", default-features = false, features = ["secp256k1", "rust-crypto"] }
+tendermint = { version = "0.35.0", default-features = false, features = ["secp256k1", "rust-crypto"] }
 tendermint-proto = { version = "0.34.0", default-features = false }
 
 # parity dependencies
